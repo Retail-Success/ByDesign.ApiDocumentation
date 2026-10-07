@@ -309,7 +309,10 @@ All routes below are relative to your API URL. `GET` routes need the `api/Read` 
 
 ## Security checklist
 
-- Keep your client secret and API key in a secrets manager or secure configuration, never in source control.
+You are responsible for keeping your client ID, client secret and API key secure. Anyone who holds them can call the API as your integration, read your data and make changes on your behalf. ByDesign treats every request made with your credentials as coming from you.
+
+- **Store credentials in a secrets manager**, such as [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), [Azure Key Vault](https://azure.microsoft.com/products/key-vault), [Google Cloud Secret Manager](https://cloud.google.com/secret-manager) or [HashiCorp Vault](https://www.vaultproject.io), and load them at runtime. Never hard-code them, commit them to source control, or share them by email or chat.
+- Limit who and what can read the secrets to the people and services that need them.
 - Call the API only from server-side code over HTTPS.
 - Send credentials only in headers or the token request body, never in URLs or query strings.
 - Request only the scopes your integration needs.
