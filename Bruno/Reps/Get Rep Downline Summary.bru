@@ -1,0 +1,27 @@
+meta {
+  name: Get Rep Downline Summary
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v2/rep/downlinesummary/:repdid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  repdid: 
+}
+
+docs {
+  `GET /api/v2/rep/downlinesummary/{repdid}`
+
+  Summary of a rep's downline.
+
+  Request/response models for this route are not published in this document; contact ByDesign for integration details.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

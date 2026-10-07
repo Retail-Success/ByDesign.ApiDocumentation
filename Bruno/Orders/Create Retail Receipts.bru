@@ -1,0 +1,57 @@
+meta {
+  name: Create Retail Receipts
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order/retailreceipt
+  body: json
+  auth: inherit
+}
+
+body:json {
+  [
+    {
+      "ID": 0,
+      "RepDID": "",
+      "BCDID": 0,
+      "CustomerDID": "",
+      "OrderDate": "2026-01-01T00:00:00Z",
+      "CurrencyTypeID": 0,
+      "ShipFirstName": "",
+      "ShipLastName": "",
+      "ShipStreet1": "",
+      "ShipStreet2": "",
+      "ShipCity": "",
+      "ShipState": "",
+      "ShipPostalCode": "",
+      "ShipCountry": "",
+      "ShipPhone": "",
+      "ShippingFee": 0,
+      "ShippingTax": 0,
+      "ServiceFee": 0,
+      "TotalCost": 0,
+      "MultiplierTypeID": 0,
+      "Taxexempt": false,
+      "ThirdpartyReferenceID": "",
+      "ReceiptLinkID": "",
+      "Details": [
+        {
+          "ProductID": "",
+          "Quantity": 0,
+          "Price": 0,
+          "Tax": 0
+        }
+      ]
+    }
+  ]
+}
+
+docs {
+  `POST /api/v2/order/retailreceipt`
+
+  Post new retail receipts (OrderDate must be UTC; translated to the proper order date by timezone territory setup).
+
+  Required scope: `api/Write`
+}

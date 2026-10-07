@@ -1,0 +1,19 @@
+meta {
+  name: List Payout Methods
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v2/payoutmethod/list
+  body: none
+  auth: inherit
+}
+
+docs {
+  `GET /api/v2/payoutmethod/list`
+
+  List the available payout methods.
+
+  Required scope: `api/Read`
+}

@@ -1,0 +1,67 @@
+meta {
+  name: Update Rep
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/v2/rep/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {
+    "Company": "",
+    "FirstName": "",
+    "LastName": "",
+    "MI": "",
+    "TaxID1": "",
+    "JoinDate": "2026-01-01T00:00:00Z",
+    "Email": "",
+    "URL": "",
+    "Password": "",
+    "BillStreet1": "",
+    "BillStreet2": "",
+    "BillCity": "",
+    "BillState": "",
+    "BillPostalCode": "",
+    "BillCounty": "",
+    "BillCountry": "",
+    "ShipStreet1": "",
+    "ShipStreet2": "",
+    "ShipCity": "",
+    "ShipState": "",
+    "ShipPostalCode": "",
+    "ShipCounty": "",
+    "ShipCountry": "",
+    "Phone1": "",
+    "Phone2": "",
+    "Phone3": "",
+    "Phone4": "",
+    "Phone5": "",
+    "Phone6": "",
+    "ReplicatedSiteText": "",
+    "RepTypeID": 0,
+    "PictureFilename": "",
+    "DateOfBirth": "2026-01-01T00:00:00Z",
+    "DivisionID": 0,
+    "Gender": "",
+    "RepStatusTypeID": 0,
+    "RenewalDate": "2026-01-01T00:00:00Z"
+  }
+}
+
+docs {
+  `PUT /api/v2/rep/{id}`
+
+  Update a rep's details; only the fields provided in the body are changed.
+
+  Required scope: `api/Write`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

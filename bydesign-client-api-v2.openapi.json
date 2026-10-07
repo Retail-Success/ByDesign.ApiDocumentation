@@ -1,0 +1,5366 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ByDesign Client API (v2)",
+    "version": "2026-09-25",
+    "description": "REST API for ByDesign partners and integrations.\n\n## Authentication\nEvery request needs two headers:\n1. `Authorization: Bearer <token>` — an OAuth 2.0 client-credentials token from `https://{client-domain}/oauth2/token`. The token endpoint is served on the same host as the API. `GET` routes need scope `api/Read`; write verbs need `api/Write`. Request only the scopes you need. Tokens expire after one hour — cache and reuse them.\n2. `x-api-key: <api key>` — your API key.\n\nGenerate your client id, client secret and API key, and look up your API URL, in the ByDesign back office. All hostnames in this document are placeholders; replace `{client-domain}` with the host from your API URL."
+  },
+  "servers": [
+    {
+      "url": "https://{client-domain}",
+      "description": "Your API URL, shown in the ByDesign back office",
+      "variables": {
+        "client-domain": {
+          "default": "client.example.com",
+          "description": "The hostname from your API URL in the ByDesign back office"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Inventory"
+    },
+    {
+      "name": "Orders"
+    },
+    {
+      "name": "Payments"
+    },
+    {
+      "name": "Customers & Reps"
+    },
+    {
+      "name": "Reps"
+    },
+    {
+      "name": "Parties"
+    },
+    {
+      "name": "Payouts"
+    },
+    {
+      "name": "Dashboard"
+    },
+    {
+      "name": "Authentication"
+    }
+  ],
+  "paths": {
+    "/api/v2/inventory/detail/{sku}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Return the inventory summary for a given Product ID (omit productID to page through all items).",
+        "operationId": "v2_get_api_inventory_inventorydetail",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Single object when productID is supplied; array of InventoryDetailViewModel when paging without productID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryDetailViewModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "ProductID was not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/group/{sku}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List the child items of an inventory group with their quantities.",
+        "operationId": "v2_get_api_inventory_inventorygroup",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryGroupViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ProductID is not a parent of an inventory group"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "ProductID was not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/category/{sku}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List inventory categories for display, filtered by rep/customer, locale, and cart configuration.",
+        "operationId": "v2_get_api_inventory_inventorycategory",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "langKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "cartConfigurationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryCategoryDisplayViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid rep/customer information"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/categorydetail": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List all inventory categories with full detail.",
+        "operationId": "v2_get_api_inventory_inventorycategorydetail",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryCategoryDetail"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/categorydetail/{categoryid}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Get a specific inventory category by id.",
+        "operationId": "v2_get_api_inventory_inventorycategorydetail_categoryid",
+        "parameters": [
+          {
+            "name": "categoryid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Not-found is reported as 200 with IsSuccessful=false and ErrorMessage 'Category ID not found'.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultOfInventoryCategoryDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/media/{productid}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Return the media (images/video) for an inventory item.",
+        "operationId": "v2_get_api_inventory_media",
+        "parameters": [
+          {
+            "name": "productid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryImage"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "ProductID was not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/price/{productid}/{rankpricetypeid}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Get the price and rank-price values for an inventory item.",
+        "operationId": "v2_get_api_inventory_inventoryprice",
+        "parameters": [
+          {
+            "name": "productid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rankpricetypeid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rankTypeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "priceType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryPriceViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ProductID not found or no matching inventory prices"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/{orderid}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get a specific order by id.",
+        "operationId": "v2_get_api_order_order_orderid",
+        "parameters": [
+          {
+            "name": "orderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "Order not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/{orderid}/lineitemdetails": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Return detailed line-item information for an order.",
+        "operationId": "v2_get_api_order_order_orderid_lineitemdetails",
+        "parameters": [
+          {
+            "name": "orderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LineItemDetail"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "Invalid OrderID / no line items"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/{orderid}/miscfield": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Return all misc field values for an order.",
+        "operationId": "v2_get_api_order_order_orderid_miscfield",
+        "parameters": [
+          {
+            "name": "orderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderMiscFields"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/miscfieldsearch/{fieldname}/{valuetosearch}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Search orders for a misc field value and return the matching order numbers.",
+        "operationId": "v2_get_api_order_order_miscfieldsearch_fieldname_valuetosearch",
+        "parameters": [
+          {
+            "name": "fieldname",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "valuetosearch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GenericEntity"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "FIELDNAME_NOT_FOUND: the requested field name was not found or is not allowed"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/ordersforrep/{repdid}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Return the orders belonging to a rep.",
+        "operationId": "v2_get_api_order_order_getordersforrep_repdid",
+        "parameters": [
+          {
+            "name": "repdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "REPDID_DOES_NOT_EXIST: the supplied rep number does not exist"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Create a new (permanent) order for a representative or customer; the order is created in entered status.",
+        "operationId": "v2_post_api_order_order",
+        "responses": {
+          "201": {
+            "description": "Created — Success returns 201 Created with a Location header to the new order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultOfOrderSummaryViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure, invalid inventory item, or payment validation failure (ApiResult with Messages)"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unhandled exception during create"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/workflow": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Submit an order workflow request.",
+        "operationId": "v2_post_api_order_order_workflow",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Response schema not published for this route — contact ByDesign for details."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ],
+        "description": "Request/response models for this route are not published in this document; contact ByDesign for integration details."
+      }
+    },
+    "/api/v2/order/returnorder/{fromorderid}": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Create a return order for an existing order (fromOrderId).",
+        "operationId": "v2_post_api_order_order_returnorder",
+        "parameters": [
+          {
+            "name": "fromorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created — Success returns 201 Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultOfOrderSummaryViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "fromOrderId not found, create failure, or invalid inventory item"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unhandled exception"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReturnOrderViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/returnorder/byorderid/{orderid}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get return orders by original order id.",
+        "operationId": "v2_get_api_order_order_returnorder_byorderid",
+        "parameters": [
+          {
+            "name": "orderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Response schema not published for this route — contact ByDesign for details."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ],
+        "description": "Request/response models for this route are not published in this document; contact ByDesign for integration details."
+      }
+    },
+    "/api/v2/order/{orderid}/post": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Post (make official) an unofficial order.",
+        "operationId": "v2_post_api_order_order_orderid_post",
+        "parameters": [
+          {
+            "name": "orderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — 200 with empty body on success."
+          },
+          "400": {
+            "description": "Order status prevents posting, or posting failed"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "OrderID not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/ordersforinvoicenumber/{invoicenumber}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get orders matching an invoice number.",
+        "operationId": "v2_get_api_order_order_getordersforinvoicenumber_invoicenumber",
+        "parameters": [
+          {
+            "name": "invoicenumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Response schema not published for this route — contact ByDesign for details."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ],
+        "description": "Request/response models for this route are not published in this document; contact ByDesign for integration details."
+      }
+    },
+    "/api/v2/order/retailreceipt": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Post new retail receipts (OrderDate must be UTC; translated to the proper order date by timezone territory setup).",
+        "operationId": "v2_post_api_order_retailreceipt",
+        "responses": {
+          "200": {
+            "description": "Success — Request and response are arrays; the response echoes the receipts with generated IDs. Duplicate ThirdpartyReferenceID values are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RetailReceiptViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "Rep, currency type, customer, or item not found; or error creating receipts"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RetailReceiptViewModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/payment/creditcard/save": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Record a credit card payment for an order (storage of an already-processed transaction; not a charge).",
+        "operationId": "v2_post_api_order_payment_creditcard_save",
+        "responses": {
+          "201": {
+            "description": "Created — Success returns 201 Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultOfPaymentViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing payment information or OrderID not found"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unexpected server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreditCardPaymentViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/payment/cash/save": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Add a cash payment to an order.",
+        "operationId": "v2_post_api_order_payment_cash_save",
+        "responses": {
+          "201": {
+            "description": "Created — Success returns 201 Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultOfPaymentViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "OrderID not found or payment amount missing"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unexpected server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CashPaymentViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/payment/create": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Create a payment record with default values. Required body fields: OrderID, Amount.",
+        "operationId": "v2_post_api_order_payment_create",
+        "responses": {
+          "201": {
+            "description": "Created — Success returns 201 Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultOfPaymentViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payment amount missing or create failed"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unexpected server error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/payment/{orderid}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get a payment by paymentID, or all payments for an order by orderID (supply exactly one).",
+        "operationId": "v2_get_api_order_payment",
+        "parameters": [
+          {
+            "name": "orderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Returns a single payment"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Single object for paymentID; array for orderID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentViewModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "PaymentID / OrderID not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/paymentcredit/creditaccounts/{repdid}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get credit accounts for a rep (optionally scoped to a customer or a specific credit account).",
+        "operationId": "v2_get_api_order_paymentcredit_creditaccounts",
+        "parameters": [
+          {
+            "name": "repdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "creditAccountId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreditAccountViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/rep/{id}": {
+      "put": {
+        "tags": [
+          "Reps"
+        ],
+        "summary": "Update a rep's details; only the fields provided in the body are changed.",
+        "operationId": "v2_put_api_rep_id_update",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Failures (rep not found, update failed) return 200 with IsSuccessful=false and a message key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepsViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Customers & Reps"
+        ],
+        "summary": "Returns profile information for a representative, looked up by Rep DID or replicated-site URL.",
+        "operationId": "v2_get_api_user_rep_id_info",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "returnCancelledOverride",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepInfoViewModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "Rep DID or Rep URL not found, or rep is cancelled"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/rep/publicinfo/{id}": {
+      "get": {
+        "tags": [
+          "Reps"
+        ],
+        "summary": "Retrieve the public information for an active or cancelled rep account.",
+        "operationId": "v2_get_api_rep_publicinfo_getinfo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicRepInfoViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "repDID empty or invalid"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/rep/publicinfo/replookup/{email}": {
+      "get": {
+        "tags": [
+          "Reps"
+        ],
+        "summary": "Look up a rep's public info.",
+        "operationId": "v2_get_api_rep_publicinfo_replookup",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Response schema not published for this route — contact ByDesign for details."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ],
+        "description": "Request/response models for this route are not published in this document; contact ByDesign for integration details."
+      }
+    },
+    "/api/v2/rep/downlinesummary/{repdid}": {
+      "get": {
+        "tags": [
+          "Reps"
+        ],
+        "summary": "Summary of a rep's downline.",
+        "operationId": "v2_get_api_rep_downlinesummary",
+        "parameters": [
+          {
+            "name": "repdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Response schema not published for this route — contact ByDesign for details."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ],
+        "description": "Request/response models for this route are not published in this document; contact ByDesign for integration details."
+      }
+    },
+    "/api/v2/rep/bestsellers/{repdid}": {
+      "get": {
+        "tags": [
+          "Reps"
+        ],
+        "summary": "Best-selling products for a rep.",
+        "operationId": "v2_get_api_rep_bestsellers",
+        "parameters": [
+          {
+            "name": "repdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Response schema not published for this route — contact ByDesign for details."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ],
+        "description": "Request/response models for this route are not published in this document; contact ByDesign for integration details."
+      }
+    },
+    "/api/v2/rep/autoship/volumesummary/{repdid}": {
+      "get": {
+        "tags": [
+          "Reps"
+        ],
+        "summary": "Autoship volume summary for a rep.",
+        "operationId": "v2_get_api_rep_autoship_autoshipvolumesummary",
+        "parameters": [
+          {
+            "name": "repdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Response schema not published for this route — contact ByDesign for details."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ],
+        "description": "Request/response models for this route are not published in this document; contact ByDesign for integration details."
+      }
+    },
+    "/api/v2/rep/payoutprofile": {
+      "post": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Create a rep's payout profile for a payout method.",
+        "operationId": "v2_post_api_rep_payoutprofile",
+        "responses": {
+          "200": {
+            "description": "Success — 200 with empty body on success."
+          },
+          "400": {
+            "description": "Invalid RepDID, payout method not found, or invalid Details"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepsPayoutProfileViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/payoutmethod/list": {
+      "get": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "List the available payout methods.",
+        "operationId": "v2_get_api_payoutmethod_list",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayoutMethodViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/payoutmethod/captions/{payoutmethodid}": {
+      "get": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Get the captions (field labels) for a payout method, used to build payout profiles.",
+        "operationId": "v2_get_api_payoutmethod_payoutmethodid_captions",
+        "parameters": [
+          {
+            "name": "payoutmethodid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PayoutMethodCaptionViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payout method not found"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/authentication/seamless/forrep/{repdid}": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get a seamless authentication token for a rep, for sign-in to other Freedom Suite applications.",
+        "operationId": "v2_get_api_authentication_seamless_forrep_repdid",
+        "parameters": [
+          {
+            "name": "repdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeamlessAuthenticationToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rep not found / not authorized"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/customer/{id}": {
+      "get": {
+        "tags": [
+          "Customers & Reps"
+        ],
+        "summary": "Returns profile information for a customer by customer DID.",
+        "operationId": "v2_get_api_user_customer_id_info",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerInfoViewModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "Customer not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/customer": {
+      "post": {
+        "tags": [
+          "Customers & Reps"
+        ],
+        "summary": "Create a new customer for a given representative.",
+        "operationId": "v2_post_api_users_customer",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure: required field missing, invalid referral, RepDID missing/invalid, email already in use, invalid DOB, P.O. Box disallowed"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "SendAutoresponders=false without authenticated Freedom user"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerCreationViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/customer/lookup": {
+      "post": {
+        "tags": [
+          "Customers & Reps"
+        ],
+        "summary": "Look up customers by DID, name, phone, or email.",
+        "operationId": "v2_post_api_users_customer_customerlookup",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Customer"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerSearchViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/party/{partyid}": {
+      "get": {
+        "tags": [
+          "Parties"
+        ],
+        "summary": "Return a specific party by id.",
+        "operationId": "v2_get_api_party_party_partyid",
+        "parameters": [
+          {
+            "name": "partyid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Party"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "Party not found"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/party/revolution/openbyrep/{repdid}": {
+      "get": {
+        "tags": [
+          "Parties"
+        ],
+        "summary": "Return the open parties for a rep.",
+        "operationId": "v2_get_api_party_revolution_openbyrep_repdid",
+        "parameters": [
+          {
+            "name": "repdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PartyRevViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rep not found"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/rep/dashboard/summary/{id}": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Quick summary: current rank, next rank, progress toward it, and projected commissions.",
+        "operationId": "v2_get_api_revolution_dashboard_quicksummary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 client credentials. Required on all v2 routes. The token endpoint is served on the same host as the API.",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/oauth2/token",
+            "scopes": {
+              "api/Read": "Read access (GET routes)",
+              "api/Write": "Write access (POST/PUT/PATCH/DELETE routes)"
+            }
+          }
+        }
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "ByDesign-issued API key. Send on every v2 call."
+      }
+    },
+    "schemas": {
+      "InventoryDetailViewModel": {
+        "type": "object",
+        "properties": {
+          "ProductID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Explanation": {
+            "type": "string"
+          },
+          "LongExplanation": {
+            "type": "string"
+          },
+          "CategoryID": {
+            "type": "integer"
+          },
+          "SubCategoryID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "TaxCodeID": {
+            "type": "string"
+          },
+          "CurrencyTypeID": {
+            "type": "integer"
+          },
+          "VirtualItem": {
+            "type": "boolean"
+          },
+          "FreeShipping": {
+            "type": "boolean"
+          },
+          "HandlingFee": {
+            "type": "number",
+            "nullable": true
+          },
+          "ShippingSurcharge": {
+            "type": "number",
+            "nullable": true
+          },
+          "Weight": {
+            "type": "number",
+            "nullable": true
+          },
+          "SubjectToPartyRetainedEarnings": {
+            "type": "boolean"
+          },
+          "SubjectToHostessRewards": {
+            "type": "boolean"
+          },
+          "Active": {
+            "type": "boolean"
+          },
+          "IsAutoshipTemplateItem": {
+            "type": "boolean"
+          },
+          "IsResellable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "MinResellablePrice": {
+            "type": "number"
+          },
+          "IsAutoshipDefaultOption": {
+            "type": "integer"
+          },
+          "IsAvailableforRep": {
+            "type": "boolean"
+          },
+          "IsAvailableforCustomer": {
+            "type": "boolean"
+          },
+          "SoftAllocationTimerOverride": {
+            "type": "integer"
+          }
+        }
+      },
+      "InventoryGroupViewModel": {
+        "type": "object",
+        "properties": {
+          "ProductID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer"
+          }
+        }
+      },
+      "InventoryCategoryDisplayViewModel": {
+        "type": "object",
+        "properties": {
+          "CategoryID": {
+            "type": "integer"
+          },
+          "Category": {
+            "type": "string"
+          },
+          "DisplayCategory": {
+            "type": "string"
+          },
+          "ParentCategoryID": {
+            "type": "integer"
+          },
+          "SortOrder": {
+            "type": "integer"
+          },
+          "HasSubCats": {
+            "type": "boolean"
+          },
+          "DisplayInCartProductCategoryPage": {
+            "type": "boolean"
+          },
+          "DisplayInCartListPage": {
+            "type": "boolean"
+          },
+          "DesktopImage": {
+            "type": "string"
+          },
+          "MobileImage": {
+            "type": "string"
+          },
+          "CartProductCategoryPageHTMLContent": {
+            "type": "string"
+          },
+          "CategoryLandingPageButtonText": {
+            "type": "string"
+          },
+          "CartProductCategoryPageContentColumnSize": {
+            "type": "integer"
+          },
+          "CartProductCategoryPageNumberOfProducts": {
+            "type": "integer"
+          },
+          "BannerLinkURL": {
+            "type": "string"
+          }
+        }
+      },
+      "InventoryCategoryDetail": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Explanation": {
+            "type": "string"
+          },
+          "ParentCategoryID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ImageFileName": {
+            "type": "string"
+          },
+          "SortOrder": {
+            "type": "integer"
+          },
+          "LimitAvailability": {
+            "type": "boolean"
+          },
+          "DisplayInCartProductCategoryPage": {
+            "type": "boolean"
+          },
+          "DisplayInCartListPage": {
+            "type": "boolean"
+          },
+          "DesktopImage": {
+            "type": "string"
+          },
+          "MobileImage": {
+            "type": "string"
+          },
+          "RepDescription": {
+            "type": "string"
+          },
+          "CustomerDescription": {
+            "type": "string"
+          },
+          "CategoryLandingPageButtonText": {
+            "type": "string"
+          },
+          "CartProductCategoryPageContentColumnSize": {
+            "type": "integer"
+          },
+          "CartProductCategoryPageNumberOfProducts": {
+            "type": "integer"
+          },
+          "TerritoryID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "TerritoryCollectionID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "BannerLinkUrl": {
+            "type": "string"
+          },
+          "DisplayWayrooCategory": {
+            "type": "boolean"
+          },
+          "DateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CreatedBy": {
+            "type": "string"
+          },
+          "DateLastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModifiedBy": {
+            "type": "string"
+          }
+        }
+      },
+      "InventoryImage": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "InventoryID": {
+            "type": "integer"
+          },
+          "Filename": {
+            "type": "string"
+          },
+          "ImageType": {
+            "type": "integer"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "IsActive": {
+            "type": "boolean"
+          },
+          "SortOrder": {
+            "type": "integer"
+          },
+          "IsListImage": {
+            "type": "boolean"
+          },
+          "IsDetailImage": {
+            "type": "boolean"
+          },
+          "IsVideo": {
+            "type": "boolean"
+          },
+          "ExternalReferenceID": {
+            "type": "string"
+          },
+          "ExternalReferenceTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "IsResourceServerImage": {
+            "type": "boolean"
+          },
+          "ImageURL": {
+            "type": "string"
+          },
+          "DateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CreatedBy": {
+            "type": "string"
+          },
+          "DateLastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModifiedBy": {
+            "type": "string"
+          }
+        }
+      },
+      "InventoryPriceViewModel": {
+        "type": "object",
+        "properties": {
+          "InventoryPriceID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ProductID": {
+            "type": "string"
+          },
+          "RankPriceTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "RankTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "PriceType": {
+            "type": "string"
+          },
+          "Price": {
+            "type": "number"
+          },
+          "CustomerService": {
+            "type": "boolean"
+          },
+          "AutoShip": {
+            "type": "boolean"
+          },
+          "AutoshipExt": {
+            "type": "boolean"
+          },
+          "Customers": {
+            "type": "boolean"
+          },
+          "Web": {
+            "type": "boolean"
+          },
+          "Party": {
+            "type": "boolean"
+          },
+          "Signup": {
+            "type": "boolean"
+          },
+          "Volume": {
+            "type": "number"
+          },
+          "Volume2": {
+            "type": "number"
+          },
+          "Volume3": {
+            "type": "number"
+          },
+          "Volume4": {
+            "type": "number"
+          },
+          "OtherPrice": {
+            "type": "number"
+          },
+          "OtherPrice2": {
+            "type": "number"
+          },
+          "OtherPrice3": {
+            "type": "number"
+          },
+          "OtherPrice4": {
+            "type": "number"
+          },
+          "Compare": {
+            "type": "number"
+          },
+          "TaxableAmount": {
+            "type": "number"
+          },
+          "ShippingValue": {
+            "type": "number"
+          },
+          "ReturnPrice": {
+            "type": "number"
+          },
+          "StartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "EndDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "MultiUnitPriceType": {
+            "type": "integer"
+          },
+          "MultiUnitQtyStart": {
+            "type": "integer"
+          },
+          "MultiUnitQtyEnd": {
+            "type": "integer"
+          }
+        }
+      },
+      "ApiResultOfInventoryCategoryDetail": {
+        "type": "object",
+        "properties": {
+          "Result": {
+            "$ref": "#/components/schemas/InventoryCategoryDetail"
+          },
+          "IsSuccessful": {
+            "type": "boolean"
+          },
+          "ErrorMessage": {
+            "type": "string"
+          }
+        }
+      },
+      "GenericEntity": {
+        "type": "object",
+        "description": "A matched entity reference. For order misc-field search, EntityID carries the matching order number.",
+        "properties": {
+          "ID": {
+            "type": "integer",
+            "description": "Internal identifier; not populated by misc-field search."
+          },
+          "EntityID": {
+            "type": "string",
+            "description": "The entity number that was found - the order number for misc-field search."
+          }
+        }
+      },
+      "OrderMiscFields": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Misc field values for the order, as a map of misc field name to value. The available field names and their value types are configured per client."
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "SubjectID": {
+            "type": "integer"
+          },
+          "SubjectTypeID": {
+            "type": "integer"
+          },
+          "SecondarySubjectID": {
+            "type": "integer"
+          },
+          "SecondarySubjectTypeID": {
+            "type": "integer"
+          },
+          "RankPriceTypeID": {
+            "type": "integer"
+          },
+          "MarketShowID": {
+            "type": "integer"
+          },
+          "StatusID": {
+            "type": "integer"
+          },
+          "TotalPrice": {
+            "type": "number"
+          },
+          "TaxTotal": {
+            "type": "number"
+          },
+          "ShippingTotal": {
+            "type": "number"
+          },
+          "IsOverrideShipping": {
+            "type": "boolean"
+          },
+          "OrderDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "BonusDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "DatePosted": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "BillName1": {
+            "type": "string"
+          },
+          "BillName2": {
+            "type": "string"
+          },
+          "BillStreet1": {
+            "type": "string"
+          },
+          "BillStreet2": {
+            "type": "string"
+          },
+          "BillCity": {
+            "type": "string"
+          },
+          "BillState": {
+            "type": "string"
+          },
+          "BillPostalCode": {
+            "type": "string"
+          },
+          "BillCountry": {
+            "type": "string"
+          },
+          "BillPhone": {
+            "type": "string"
+          },
+          "ShipName1": {
+            "type": "string"
+          },
+          "ShipName2": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "ShipPhone": {
+            "type": "string"
+          },
+          "InvoiceNotes": {
+            "type": "string"
+          },
+          "InvoiceNumber": {
+            "type": "string"
+          },
+          "MultiplierTypeID": {
+            "type": "integer"
+          },
+          "ShipMethodID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "TrackingID": {
+            "type": "string"
+          },
+          "DateShipped": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "AutoShipScheduleID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "BillEmail": {
+            "type": "string"
+          },
+          "ShipEmail": {
+            "type": "string"
+          },
+          "OrderLinkID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "BillCounty": {
+            "type": "string"
+          },
+          "ShipCounty": {
+            "type": "string"
+          },
+          "ShipGeoCode": {
+            "type": "string"
+          },
+          "Packslip_SupressFinancials": {
+            "type": "boolean"
+          },
+          "PartyID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "HandlingFee": {
+            "type": "number"
+          },
+          "ShippingTax": {
+            "type": "number"
+          },
+          "ShippingTaxCodeID": {
+            "type": "string"
+          },
+          "HandlingTax": {
+            "type": "number"
+          },
+          "HandlingTaxCodeID": {
+            "type": "string"
+          },
+          "IsGiftOrder": {
+            "type": "boolean"
+          },
+          "IsOverrideHandlingFee": {
+            "type": "boolean"
+          },
+          "IsHostOrder": {
+            "type": "boolean"
+          },
+          "DataRepairNotes": {
+            "type": "string"
+          },
+          "DateVoided": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "DateLastUnofficial": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "AutoshipBatchID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "RetryAttempts": {
+            "type": "integer",
+            "nullable": true
+          },
+          "DateLastRetry": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "RetryPaymentRuleID": {
+            "type": "integer"
+          },
+          "TaxExemptCodeID": {
+            "type": "string"
+          },
+          "IsTaxExempt": {
+            "type": "boolean"
+          },
+          "CurrencyTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "PeriodID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "CompPeriodID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "DateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CreatedBy": {
+            "type": "string"
+          },
+          "DateLastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModifiedBy": {
+            "type": "string"
+          }
+        }
+      },
+      "LineItemDetail": {
+        "type": "object",
+        "properties": {
+          "OrderID": {
+            "type": "integer"
+          },
+          "PartyID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "OrderDetailID": {
+            "type": "integer"
+          },
+          "ProductID": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer"
+          },
+          "Price": {
+            "type": "number"
+          },
+          "Volume1": {
+            "type": "number"
+          },
+          "Volume2": {
+            "type": "number"
+          },
+          "Volume3": {
+            "type": "number"
+          },
+          "Volume4": {
+            "type": "number"
+          },
+          "OtherPrice1": {
+            "type": "number"
+          },
+          "OtherPrice2": {
+            "type": "number"
+          },
+          "OtherPrice3": {
+            "type": "number"
+          },
+          "OtherPrice4": {
+            "type": "number"
+          },
+          "Tax": {
+            "type": "number",
+            "nullable": true
+          },
+          "TaxableAmount": {
+            "type": "number"
+          },
+          "IsGroupOwner": {
+            "type": "boolean"
+          },
+          "ParentOrderDetailID": {
+            "type": "integer"
+          },
+          "WarehouseName": {
+            "type": "string"
+          },
+          "WarehouseEmail": {
+            "type": "string"
+          },
+          "WarehousePackSlipLine1": {
+            "type": "string"
+          },
+          "WarehousePackSlipLine2": {
+            "type": "string"
+          },
+          "WarehousePackSlipLine3": {
+            "type": "string"
+          },
+          "WarehousePackSlipLine4": {
+            "type": "string"
+          },
+          "WarehousePackSlipLine5": {
+            "type": "string"
+          },
+          "WarehousePackSlipLine6": {
+            "type": "string"
+          },
+          "WarehousePickupLocation": {
+            "type": "string"
+          },
+          "WarehouseCompanyTaxID": {
+            "type": "string"
+          },
+          "WarehouseIntlCompanyName": {
+            "type": "string"
+          },
+          "WarehousePackSlipTaxTitle": {
+            "type": "string"
+          },
+          "WarehousePackSlipTaxPercentage": {
+            "type": "string"
+          },
+          "PackSlipProcessID": {
+            "type": "integer"
+          },
+          "PackSlipProductID": {
+            "type": "string"
+          },
+          "PackSlipBarcode": {
+            "type": "string"
+          },
+          "PackSlipDescription": {
+            "type": "string"
+          },
+          "CompareMSRP": {
+            "type": "number",
+            "nullable": true
+          },
+          "Weight": {
+            "type": "number",
+            "nullable": true
+          },
+          "LineItemWeight": {
+            "type": "number",
+            "nullable": true
+          },
+          "IsResellable": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "MinResellablePrice": {
+            "type": "number"
+          },
+          "OrderdetailStatusID": {
+            "type": "integer"
+          }
+        }
+      },
+      "CreateOrderViewModel": {
+        "type": "object",
+        "required": [
+          "OrderDate",
+          "MarketShowID",
+          "CurrencyTypeID"
+        ],
+        "properties": {
+          "RepDID": {
+            "type": "string"
+          },
+          "RepID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "CustomerDID": {
+            "type": "string"
+          },
+          "PartyID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "OrderDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "BonusDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "MarketShowID": {
+            "type": "integer"
+          },
+          "BillingAddress": {
+            "$ref": "#/components/schemas/AddressViewModelAddress"
+          },
+          "ShippingAddress": {
+            "$ref": "#/components/schemas/AddressViewModelAddress"
+          },
+          "ShipGeoCode": {
+            "type": "string"
+          },
+          "InvoiceNotes": {
+            "type": "string"
+          },
+          "ShipMethodID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "TaxExemptCodeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "IsTaxExempt": {
+            "type": "boolean"
+          },
+          "CurrencyTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "SendAutoresponders": {
+            "type": "boolean"
+          },
+          "ShippingTotal": {
+            "type": "number",
+            "nullable": true
+          },
+          "ShippingTax": {
+            "type": "number",
+            "nullable": true
+          },
+          "HandlingFee": {
+            "type": "number",
+            "nullable": true
+          },
+          "HandlingTax": {
+            "type": "number",
+            "nullable": true
+          },
+          "InvoiceNumber": {
+            "type": "string"
+          },
+          "OrderDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderDetailWithOverridesViewModel"
+            }
+          },
+          "PaymentInfo": {
+            "$ref": "#/components/schemas/PaymentViewModel"
+          },
+          "OrderMisc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MiscFieldViewModel"
+            }
+          }
+        }
+      },
+      "CreateReturnOrderViewModel": {
+        "type": "object",
+        "properties": {
+          "OrderDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ReasonCodeTypeID": {
+            "type": "integer"
+          },
+          "Explanation": {
+            "type": "string"
+          },
+          "ShippingChargeType": {
+            "$ref": "#/components/schemas/ShippingAndHandlingChargeType"
+          },
+          "HandlingChargeType": {
+            "$ref": "#/components/schemas/ShippingAndHandlingChargeType"
+          },
+          "ShippingChargeValue": {
+            "type": "number"
+          },
+          "ShippingTaxValue": {
+            "type": "number"
+          },
+          "HandlingChargeValue": {
+            "type": "number"
+          },
+          "HandlingTaxValue": {
+            "type": "number"
+          },
+          "ReturnItemList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReturnItemViewModel"
+            }
+          }
+        }
+      },
+      "ReturnItemViewModel": {
+        "type": "object",
+        "properties": {
+          "Quantity": {
+            "type": "integer"
+          },
+          "OrderDetailID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ProductID": {
+            "type": "string"
+          },
+          "PriceTaxFields": {
+            "$ref": "#/components/schemas/OrderDetailOverridenPriceTaxFields"
+          },
+          "VolumeFields": {
+            "$ref": "#/components/schemas/OrderDetailOverridenVolumeFields"
+          },
+          "OtherPriceFields": {
+            "$ref": "#/components/schemas/OrderDetailOverridenOtherPriceFields"
+          }
+        }
+      },
+      "OrderDetailWithOverridesViewModel": {
+        "type": "object",
+        "properties": {
+          "Quantity": {
+            "type": "integer"
+          },
+          "ProductID": {
+            "type": "string"
+          },
+          "PriceTaxFields": {
+            "$ref": "#/components/schemas/OrderDetailOverridenPriceTaxFields"
+          },
+          "VolumeFields": {
+            "$ref": "#/components/schemas/OrderDetailOverridenVolumeFields"
+          },
+          "OtherPriceFields": {
+            "$ref": "#/components/schemas/OrderDetailOverridenOtherPriceFields"
+          },
+          "Misc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MiscFieldViewModel"
+            }
+          }
+        }
+      },
+      "OrderDetailOverridenPriceTaxFields": {
+        "type": "object",
+        "properties": {
+          "Price": {
+            "type": "number"
+          },
+          "TaxableAmount": {
+            "type": "number"
+          },
+          "Tax": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "OrderDetailOverridenVolumeFields": {
+        "type": "object",
+        "properties": {
+          "Volume": {
+            "type": "number"
+          },
+          "Volume2": {
+            "type": "number"
+          },
+          "Volume3": {
+            "type": "number"
+          },
+          "Volume4": {
+            "type": "number"
+          }
+        }
+      },
+      "OrderDetailOverridenOtherPriceFields": {
+        "type": "object",
+        "properties": {
+          "OtherPrice": {
+            "type": "number"
+          },
+          "OtherPrice2": {
+            "type": "number"
+          },
+          "OtherPrice3": {
+            "type": "number"
+          },
+          "OtherPrice4": {
+            "type": "number"
+          }
+        }
+      },
+      "MiscFieldViewModel": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string"
+          },
+          "Value": {
+            "type": "string"
+          }
+        }
+      },
+      "AddressViewModelAddress": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Street1": {
+            "type": "string"
+          },
+          "Street2": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "State": {
+            "type": "string"
+          },
+          "PostalCode": {
+            "type": "string"
+          },
+          "County": {
+            "type": "string"
+          },
+          "Country": {
+            "type": "string"
+          },
+          "Phone": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "SpecialInstructions": {
+            "type": "string"
+          },
+          "SuggestedAddress": {
+            "type": "boolean"
+          },
+          "IsHiddenOnCart": {
+            "type": "boolean"
+          },
+          "IsOverrideAddress": {
+            "type": "boolean"
+          },
+          "IsDefaultProfile": {
+            "type": "integer"
+          }
+        }
+      },
+      "ShippingAndHandlingChargeType": {
+        "type": "integer",
+        "description": "0=Original, 1=PercentageOfOriginal, 2=SpecificValue, 3=AutomaticallyRecalculate",
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "RetailReceiptViewModel": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "RepDID": {
+            "type": "string"
+          },
+          "BCDID": {
+            "type": "integer"
+          },
+          "CustomerDID": {
+            "type": "string"
+          },
+          "OrderDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC"
+          },
+          "CurrencyTypeID": {
+            "type": "integer"
+          },
+          "ShipFirstName": {
+            "type": "string"
+          },
+          "ShipLastName": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "ShipPhone": {
+            "type": "string"
+          },
+          "ShippingFee": {
+            "type": "number"
+          },
+          "ShippingTax": {
+            "type": "number"
+          },
+          "ServiceFee": {
+            "type": "number"
+          },
+          "TotalCost": {
+            "type": "number"
+          },
+          "MultiplierTypeID": {
+            "type": "integer",
+            "description": "1=Normal, 2=Return"
+          },
+          "Taxexempt": {
+            "type": "boolean"
+          },
+          "ThirdpartyReferenceID": {
+            "type": "string"
+          },
+          "ReceiptLinkID": {
+            "type": "string"
+          },
+          "Details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RetailReceiptDetailViewModel"
+            }
+          }
+        }
+      },
+      "RetailReceiptDetailViewModel": {
+        "type": "object",
+        "properties": {
+          "ProductID": {
+            "type": "string"
+          },
+          "Quantity": {
+            "type": "integer"
+          },
+          "Price": {
+            "type": "number"
+          },
+          "Tax": {
+            "type": "number"
+          }
+        }
+      },
+      "OrderSummaryViewModel": {
+        "type": "object",
+        "properties": {
+          "OrderID": {
+            "type": "integer"
+          },
+          "RepDID": {
+            "type": "string"
+          },
+          "CustomerDID": {
+            "type": "string"
+          },
+          "Subtotal": {
+            "type": "number"
+          },
+          "ShippingTotal": {
+            "type": "number"
+          },
+          "ShippingTax": {
+            "type": "number"
+          },
+          "HandlingFee": {
+            "type": "number"
+          },
+          "HandlingTax": {
+            "type": "number"
+          },
+          "ProductTax": {
+            "type": "number"
+          },
+          "TaxTotal": {
+            "type": "number"
+          },
+          "OrderTotal": {
+            "type": "number"
+          },
+          "CreditUsed": {
+            "type": "number"
+          },
+          "PaymentTotal": {
+            "type": "number"
+          },
+          "BalanceDue": {
+            "type": "number"
+          }
+        }
+      },
+      "ApiResultOfOrderSummaryViewModel": {
+        "type": "object",
+        "properties": {
+          "Result": {
+            "$ref": "#/components/schemas/OrderSummaryViewModel"
+          },
+          "IsSuccessful": {
+            "type": "boolean"
+          },
+          "MessageTranslationKey": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          },
+          "Messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiResultMessage"
+            }
+          }
+        }
+      },
+      "ApiResultMessage": {
+        "type": "object",
+        "properties": {
+          "Key": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          }
+        }
+      },
+      "CreditCardPaymentViewModel": {
+        "type": "object",
+        "required": [
+          "PaymentDate",
+          "Amount",
+          "CreditCardAccountId"
+        ],
+        "properties": {
+          "PaymentDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Amount": {
+            "type": "number",
+            "description": "Negative for return orders"
+          },
+          "Last4CCNumber": {
+            "type": "string",
+            "description": "Last 4 digits of the card number"
+          },
+          "ExpirationDateMMYY": {
+            "type": "string",
+            "description": "MMYY format"
+          },
+          "CardHolderName": {
+            "type": "string"
+          },
+          "Address1": {
+            "type": "string"
+          },
+          "Address2": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "State": {
+            "type": "string"
+          },
+          "Country": {
+            "type": "string"
+          },
+          "PostalCode": {
+            "type": "string"
+          },
+          "AuthorizationCode": {
+            "type": "string"
+          },
+          "TransactionID": {
+            "type": "string"
+          },
+          "ReferenceNumber": {
+            "type": "string"
+          },
+          "CreditCardAccountId": {
+            "type": "string"
+          },
+          "CreditCardType": {
+            "$ref": "#/components/schemas/CreditCardType"
+          },
+          "OrderID": {
+            "type": "integer"
+          }
+        }
+      },
+      "CashPaymentViewModel": {
+        "type": "object",
+        "required": [
+          "OrderID",
+          "PaymentDate",
+          "Amount"
+        ],
+        "properties": {
+          "OrderID": {
+            "type": "integer"
+          },
+          "PaymentDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Amount": {
+            "type": "number"
+          }
+        }
+      },
+      "PaymentViewModel": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "PaymentTypeID": {
+            "type": "integer"
+          },
+          "PaymentDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "OrderID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "Amount": {
+            "type": "number"
+          },
+          "Detail1": {
+            "type": "string",
+            "description": "Card numbers are returned masked (XXXXXXXXXXXXnnnn) for card payment types"
+          },
+          "Detail2": {
+            "type": "string"
+          },
+          "Detail3": {
+            "type": "string"
+          },
+          "Detail4": {
+            "type": "string"
+          },
+          "Detail5": {
+            "type": "string"
+          },
+          "Detail6": {
+            "type": "string"
+          },
+          "StatusTypeID": {
+            "type": "integer"
+          },
+          "MarketShowID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "Detail7": {
+            "type": "string"
+          },
+          "Detail8": {
+            "type": "string"
+          },
+          "Detail9": {
+            "type": "string"
+          },
+          "Detail10": {
+            "type": "string"
+          },
+          "Detail11": {
+            "type": "string"
+          },
+          "Detail12": {
+            "type": "string"
+          },
+          "CCAccount": {
+            "type": "string"
+          },
+          "CCAccountID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "PartyPaymentID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "PartyRewardID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ImportBatchID": {
+            "type": "integer"
+          },
+          "DataRepairNotes": {
+            "type": "string"
+          },
+          "DebitCardAccountID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "GiftCardAccountID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ECheckAccountID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "CurrencyTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "Detail13": {
+            "type": "string"
+          },
+          "Detail14": {
+            "type": "string"
+          },
+          "Detail15": {
+            "type": "string"
+          },
+          "Detail16": {
+            "type": "string"
+          },
+          "Detail17": {
+            "type": "string"
+          },
+          "Detail18": {
+            "type": "string"
+          },
+          "DisconnectedAccountID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "PartyID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "IsBypass": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "TokenizedPaymentAccountID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "Detail19": {
+            "type": "string"
+          },
+          "PromissoryAmount": {
+            "type": "number"
+          },
+          "CreatedBy": {
+            "type": "string"
+          },
+          "LastModifiedBy": {
+            "type": "string"
+          },
+          "DateLastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "Detail20": {
+            "type": "string"
+          },
+          "Detail21": {
+            "type": "string"
+          },
+          "Detail22": {
+            "type": "string"
+          },
+          "Detail23": {
+            "type": "string"
+          },
+          "Detail24": {
+            "type": "string"
+          },
+          "Detail25": {
+            "type": "string"
+          }
+        }
+      },
+      "CreditCardType": {
+        "type": "integer",
+        "description": "1=Visa, 2=MasterCard, 3=AmericanExpress, 4=Discover, 5=DinersClub, 6=JapaneseCreditBank, 7=Laser, 8=CarteBancaire, 9=Dankort, 100=Other",
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          100
+        ]
+      },
+      "ApiResultOfPaymentViewModel": {
+        "type": "object",
+        "properties": {
+          "Result": {
+            "$ref": "#/components/schemas/PaymentViewModel"
+          },
+          "IsSuccessful": {
+            "type": "boolean"
+          },
+          "MessageTranslationKey": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          },
+          "Messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiResultMessage"
+            }
+          }
+        }
+      },
+      "CreditAccountViewModel": {
+        "type": "object",
+        "properties": {
+          "CreditAccountId": {
+            "type": "integer"
+          },
+          "CreditAccountDescription": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Amount": {
+            "type": "number"
+          },
+          "CurrencyTypeID": {
+            "type": "integer"
+          },
+          "Priority": {
+            "type": "integer"
+          },
+          "RedemptionLimitationMessage": {
+            "type": "string"
+          },
+          "AccountTotal": {
+            "type": "number"
+          }
+        }
+      },
+      "RepsViewModel": {
+        "type": "object",
+        "properties": {
+          "Company": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "MI": {
+            "type": "string"
+          },
+          "TaxID1": {
+            "type": "string"
+          },
+          "JoinDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "URL": {
+            "type": "string"
+          },
+          "Password": {
+            "type": "string"
+          },
+          "BillStreet1": {
+            "type": "string"
+          },
+          "BillStreet2": {
+            "type": "string"
+          },
+          "BillCity": {
+            "type": "string"
+          },
+          "BillState": {
+            "type": "string"
+          },
+          "BillPostalCode": {
+            "type": "string"
+          },
+          "BillCounty": {
+            "type": "string"
+          },
+          "BillCountry": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCounty": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "Phone1": {
+            "type": "string"
+          },
+          "Phone2": {
+            "type": "string"
+          },
+          "Phone3": {
+            "type": "string"
+          },
+          "Phone4": {
+            "type": "string"
+          },
+          "Phone5": {
+            "type": "string"
+          },
+          "Phone6": {
+            "type": "string"
+          },
+          "ReplicatedSiteText": {
+            "type": "string"
+          },
+          "RepTypeID": {
+            "type": "integer"
+          },
+          "PictureFilename": {
+            "type": "string"
+          },
+          "DateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "DivisionID": {
+            "type": "integer"
+          },
+          "Gender": {
+            "type": "string"
+          },
+          "RepStatusTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "RenewalDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ApiResult": {
+        "type": "object",
+        "properties": {
+          "IsSuccessful": {
+            "type": "boolean"
+          },
+          "MessageTranslationKey": {
+            "type": "string"
+          },
+          "Message": {
+            "type": "string"
+          },
+          "Messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApiResultMessage"
+            }
+          }
+        }
+      },
+      "PublicRepInfoViewModel": {
+        "type": "object",
+        "properties": {
+          "RepDID": {
+            "type": "string"
+          },
+          "DisplayName": {
+            "type": "string"
+          },
+          "DisplayNameHeader": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "PublicImageUrl": {
+            "type": "string"
+          },
+          "ShouldAskToSwitch": {
+            "type": "boolean"
+          },
+          "ReplicatedSiteUrl": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "State": {
+            "type": "string"
+          },
+          "Country": {
+            "type": "string"
+          },
+          "Phone": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "RepSocialNetworks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepSocialNetworkPublicInfoViewModel"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "RepSocialNetworkPublicInfoViewModel": {
+        "type": "object",
+        "properties": {
+          "SocialNetworkingSiteID": {
+            "type": "integer"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "ImageFileName": {
+            "type": "string"
+          },
+          "Abbreviation": {
+            "type": "string"
+          },
+          "FullURL": {
+            "type": "string"
+          }
+        }
+      },
+      "RepsPayoutProfileViewModel": {
+        "type": "object",
+        "properties": {
+          "RepDID": {
+            "type": "string"
+          },
+          "PayoutMethodID": {
+            "type": "integer"
+          },
+          "SetAsDefaultPayoutMethod": {
+            "type": "boolean"
+          },
+          "profileValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepsPayoutProfileItemValue"
+            }
+          }
+        }
+      },
+      "RepsPayoutProfileItemValue": {
+        "type": "object",
+        "properties": {
+          "DetailNumber": {
+            "type": "integer"
+          },
+          "Value": {
+            "type": "string"
+          }
+        }
+      },
+      "PayoutMethodViewModel": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "PayoutMethodTypeID": {
+            "type": "integer"
+          },
+          "ProgrammingKey": {
+            "type": "string"
+          }
+        }
+      },
+      "PayoutMethodCaptionViewModel": {
+        "type": "object",
+        "properties": {
+          "DetailNumber": {
+            "type": "integer"
+          },
+          "Caption": {
+            "type": "string"
+          }
+        }
+      },
+      "SeamlessAuthenticationToken": {
+        "type": "object",
+        "properties": {
+          "Token": {
+            "type": "string"
+          },
+          "IPAddress": {
+            "type": "string"
+          }
+        }
+      },
+      "RepInfoViewModel": {
+        "type": "object",
+        "properties": {
+          "RepID": {
+            "type": "integer"
+          },
+          "RepDID": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "RomanizedCompany": {
+            "type": "string"
+          },
+          "RomanizedFirstName": {
+            "type": "string"
+          },
+          "RomanizedLastName": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "BillStreet1": {
+            "type": "string"
+          },
+          "BillStreet2": {
+            "type": "string"
+          },
+          "BillCity": {
+            "type": "string"
+          },
+          "BillState": {
+            "type": "string"
+          },
+          "BillPostalCode": {
+            "type": "string"
+          },
+          "BillCounty": {
+            "type": "string"
+          },
+          "BillCountry": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCounty": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "Phone1": {
+            "type": "string"
+          },
+          "Phone2": {
+            "type": "string"
+          },
+          "Phone3": {
+            "type": "string"
+          },
+          "Phone4": {
+            "type": "string"
+          },
+          "Phone5": {
+            "type": "string"
+          },
+          "Phone6": {
+            "type": "string"
+          },
+          "PictureFilename": {
+            "type": "string"
+          },
+          "PublicImageUrl": {
+            "type": "string",
+            "readOnly": true
+          },
+          "ReplicatedSiteText": {
+            "type": "string"
+          },
+          "SponsorRepDID": {
+            "type": "string"
+          },
+          "SponsorRepCount": {
+            "type": "integer"
+          },
+          "RankTypeID": {
+            "type": "integer"
+          },
+          "RepStatusTypeID": {
+            "type": "integer"
+          },
+          "RepStatusType": {
+            "type": "string"
+          },
+          "URL": {
+            "type": "string"
+          },
+          "UplineRepDID": {
+            "type": "string"
+          },
+          "JoinDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "RepTypeID": {
+            "type": "integer"
+          },
+          "CustomField1": {
+            "type": "string"
+          },
+          "CustomField2": {
+            "type": "string"
+          },
+          "CustomField3": {
+            "type": "string"
+          },
+          "CustomField4": {
+            "type": "string"
+          },
+          "CustomField5": {
+            "type": "string"
+          },
+          "CustomField6": {
+            "type": "string"
+          },
+          "RenewalDate": {
+            "type": "string"
+          },
+          "RepRenewalSKU": {
+            "type": "string"
+          },
+          "MI": {
+            "type": "string"
+          },
+          "PayToName": {
+            "type": "string"
+          },
+          "DefaultLocaleID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "Gender": {
+            "type": "string"
+          },
+          "PreferredCulture": {
+            "type": "integer"
+          },
+          "DateofBirth": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "DivisionID": {
+            "type": "integer"
+          },
+          "PasswordSet": {
+            "type": "boolean"
+          },
+          "IsPasswordSet": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "TaxID1": {
+            "type": "string"
+          },
+          "TaxID2": {
+            "type": "string"
+          },
+          "BonusAccountNumber": {
+            "type": "string"
+          },
+          "BonusRoutingNumber": {
+            "type": "string"
+          },
+          "BonusVendorName": {
+            "type": "string"
+          },
+          "BonusAccountType": {
+            "type": "integer"
+          },
+          "HasTaxID": {
+            "type": "boolean"
+          },
+          "RepEntityTypeID": {
+            "type": "integer"
+          },
+          "RepEntityType": {
+            "type": "string"
+          },
+          "PreferredPlacement": {
+            "type": "string"
+          }
+        }
+      },
+      "CustomerInfoViewModel": {
+        "type": "object",
+        "properties": {
+          "CustomerID": {
+            "type": "integer"
+          },
+          "CustomerDID": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "BillStreet1": {
+            "type": "string"
+          },
+          "BillStreet2": {
+            "type": "string"
+          },
+          "BillCity": {
+            "type": "string"
+          },
+          "BillState": {
+            "type": "string"
+          },
+          "BillPostalCode": {
+            "type": "string"
+          },
+          "BillCountry": {
+            "type": "string"
+          },
+          "BillCounty": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "ShipCounty": {
+            "type": "string"
+          },
+          "Phone1": {
+            "type": "string"
+          },
+          "Phone2": {
+            "type": "string"
+          },
+          "Phone3": {
+            "type": "string"
+          },
+          "Phone4": {
+            "type": "string"
+          },
+          "Phone5": {
+            "type": "string"
+          },
+          "Phone6": {
+            "type": "string"
+          },
+          "PreferredCulture": {
+            "type": "integer"
+          },
+          "PreferredCultureDescription": {
+            "type": "string"
+          },
+          "DateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ApplicationDate": {
+            "type": "string"
+          },
+          "CustomerStatusTypeDescription": {
+            "type": "string"
+          },
+          "PasswordRegex": {
+            "$ref": "#/components/schemas/PasswordRegexType"
+          },
+          "IsReceivingZipLingoMessages": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "CustomerTypeID": {
+            "type": "integer"
+          },
+          "DisplayName": {
+            "type": "string"
+          }
+        }
+      },
+      "PasswordRegexType": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "Regex": {
+            "type": "string"
+          },
+          "TranslationKey": {
+            "type": "string"
+          }
+        }
+      },
+      "CustomerCreationViewModel": {
+        "type": "object",
+        "properties": {
+          "FirstName": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "LastName": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "Email": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "Password": {
+            "type": "string"
+          },
+          "RepDID": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "Phone1": {
+            "type": "string"
+          },
+          "Phone2": {
+            "type": "string"
+          },
+          "Phone3": {
+            "type": "string"
+          },
+          "Phone4": {
+            "type": "string"
+          },
+          "ShippingStreet1": {
+            "type": "string"
+          },
+          "ShippingStreet2": {
+            "type": "string"
+          },
+          "ShippingCountry": {
+            "type": "string"
+          },
+          "ShippingPostalCode": {
+            "type": "string"
+          },
+          "ShippingCity": {
+            "type": "string"
+          },
+          "ShippingState": {
+            "type": "string"
+          },
+          "ShippingCounty": {
+            "type": "string"
+          },
+          "BillingStreet1": {
+            "type": "string"
+          },
+          "BillingStreet2": {
+            "type": "string"
+          },
+          "BillingCountry": {
+            "type": "string"
+          },
+          "BillingPostalCode": {
+            "type": "string"
+          },
+          "BillingCity": {
+            "type": "string"
+          },
+          "BillingState": {
+            "type": "string"
+          },
+          "BillingCounty": {
+            "type": "string"
+          },
+          "AgreedToTerms": {
+            "type": "boolean"
+          },
+          "ReferralMarketType": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ReferralMarketTypeInput": {
+            "type": "string"
+          },
+          "ReferCustomerID": {
+            "type": "string"
+          },
+          "TaxID": {
+            "type": "string"
+          },
+          "TaxID2": {
+            "type": "string"
+          },
+          "ReplicatedSiteUrl": {
+            "type": "string"
+          },
+          "CustomerType": {
+            "type": "integer",
+            "default": 0
+          },
+          "SendAutoresponders": {
+            "type": "boolean",
+            "default": true
+          },
+          "DateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ReciprocalRepDID": {
+            "type": "string"
+          },
+          "PreferredCulture": {
+            "type": "integer"
+          }
+        }
+      },
+      "CustomerSearchViewModel": {
+        "type": "object",
+        "properties": {
+          "CustomerDID": {
+            "type": "string"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "Phone": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "getAll": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "CustomerID": {
+            "type": "integer"
+          },
+          "CustomerDID": {
+            "type": "string"
+          },
+          "BCKey": {
+            "type": "integer"
+          },
+          "CustomerTypeID": {
+            "type": "integer"
+          },
+          "FirstName": {
+            "type": "string"
+          },
+          "LastName": {
+            "type": "string"
+          },
+          "MI": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Company": {
+            "type": "string"
+          },
+          "PreferredCulture": {
+            "type": "integer"
+          },
+          "Password": {
+            "type": "string"
+          },
+          "BillStreet1": {
+            "type": "string"
+          },
+          "BillStreet2": {
+            "type": "string"
+          },
+          "BillCity": {
+            "type": "string"
+          },
+          "BillState": {
+            "type": "string"
+          },
+          "BillPostalCode": {
+            "type": "string"
+          },
+          "BillCountry": {
+            "type": "string"
+          },
+          "BillCounty": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "ShipCounty": {
+            "type": "string"
+          },
+          "Phone1": {
+            "type": "string"
+          },
+          "Phone2": {
+            "type": "string"
+          },
+          "Phone3": {
+            "type": "string"
+          },
+          "Phone4": {
+            "type": "string"
+          },
+          "Phone5": {
+            "type": "string"
+          },
+          "Phone6": {
+            "type": "string"
+          },
+          "TaxExemptCodeID": {
+            "type": "string"
+          },
+          "TaxExempt": {
+            "type": "boolean"
+          },
+          "TaxID": {
+            "type": "string"
+          },
+          "TaxID2": {
+            "type": "string"
+          },
+          "ReferralMarketTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "ReferralMarketTypeInput": {
+            "type": "string"
+          },
+          "ReferCustomerID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "CreatedBy": {
+            "type": "string"
+          },
+          "PasswordResetKey": {
+            "type": "string"
+          },
+          "PasswordResetExpirationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "DateOfBirth": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ApplicationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "StatusTypeID": {
+            "type": "integer"
+          },
+          "ContactStatusID": {
+            "type": "integer"
+          },
+          "RomanizedName": {
+            "type": "string"
+          },
+          "ReciprocalRepID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "LastModifiedBy": {
+            "type": "string"
+          },
+          "DateLastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "TaxExemptReasonTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "UpgradeRepID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "PhonesComputed": {
+            "type": "string"
+          },
+          "CreatedDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "guid": {
+            "type": "string"
+          },
+          "AccountNumber": {
+            "type": "string"
+          },
+          "Gender": {
+            "type": "string"
+          },
+          "EmailOptOut_Company": {
+            "type": "boolean"
+          },
+          "EmailOptOut_Upline": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Party": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "BCKey": {
+            "type": "integer"
+          },
+          "HostCustomerID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "PartyDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "PartyInfo": {
+            "type": "string"
+          },
+          "PartyTypeID": {
+            "type": "integer"
+          },
+          "PartyCloseDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "PartyStartTime": {
+            "type": "string"
+          },
+          "PartyEndTime": {
+            "type": "string"
+          },
+          "BillName": {
+            "type": "string"
+          },
+          "BillStreet1": {
+            "type": "string"
+          },
+          "BillStreet2": {
+            "type": "string"
+          },
+          "BillCity": {
+            "type": "string"
+          },
+          "BillCounty": {
+            "type": "string"
+          },
+          "BillState": {
+            "type": "string"
+          },
+          "BillPostalCode": {
+            "type": "string"
+          },
+          "BillCountry": {
+            "type": "string"
+          },
+          "ShipName": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipCounty": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "Phone1": {
+            "type": "string"
+          },
+          "Phone2": {
+            "type": "string"
+          },
+          "Email": {
+            "type": "string"
+          },
+          "Directions": {
+            "type": "string"
+          },
+          "DistributionTypeID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "RetainedEarningsEarned": {
+            "type": "number",
+            "nullable": true
+          },
+          "REBonusPeriodID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "REBonusPaidAmount": {
+            "type": "number",
+            "nullable": true
+          },
+          "REBonusPaidDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "DataRepairNotes": {
+            "type": "string"
+          },
+          "PartyStatusID": {
+            "type": "integer"
+          },
+          "DateFinalBooking": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "DateVoided": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "PartyGUID": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "Format": {
+            "type": "string"
+          },
+          "Location": {
+            "type": "string"
+          },
+          "IsAvailableInCart": {
+            "type": "boolean"
+          },
+          "ShippingType": {
+            "type": "string"
+          },
+          "BillingType": {
+            "type": "string"
+          },
+          "EventURL": {
+            "type": "string"
+          },
+          "EndDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "InternalNote": {
+            "type": "string"
+          },
+          "ShoppingShortenURL": {
+            "type": "string"
+          },
+          "OriginalPartyDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "IsMySelfHost": {
+            "type": "boolean"
+          },
+          "MiscFields": {
+            "type": "object"
+          },
+          "DateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "CreatedBy": {
+            "type": "string"
+          },
+          "DateLastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "LastModifiedBy": {
+            "type": "string"
+          }
+        }
+      },
+      "PartyRevViewModel": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "PartyTerm": {
+            "type": "string"
+          },
+          "PartyTermPlural": {
+            "type": "string"
+          },
+          "HostessTerm": {
+            "type": "string"
+          },
+          "HostessTermPlural": {
+            "type": "string"
+          },
+          "HostCustomerID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "HostCustomerDID": {
+            "type": "string"
+          },
+          "HostCustomerName": {
+            "type": "string"
+          },
+          "HostCustomerPhone": {
+            "type": "string"
+          },
+          "HostCustomerEmail": {
+            "type": "string"
+          },
+          "PartyDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "PartyInfo": {
+            "type": "string"
+          },
+          "IsClosed": {
+            "type": "boolean"
+          },
+          "IsDownline": {
+            "type": "boolean"
+          },
+          "BillName": {
+            "type": "string"
+          },
+          "BillStreet1": {
+            "type": "string"
+          },
+          "BillStreet2": {
+            "type": "string"
+          },
+          "BillCity": {
+            "type": "string"
+          },
+          "BillCounty": {
+            "type": "string"
+          },
+          "BillState": {
+            "type": "string"
+          },
+          "BillPostalCode": {
+            "type": "string"
+          },
+          "BillCountry": {
+            "type": "string"
+          },
+          "ShipName": {
+            "type": "string"
+          },
+          "ShipStreet1": {
+            "type": "string"
+          },
+          "ShipStreet2": {
+            "type": "string"
+          },
+          "ShipCity": {
+            "type": "string"
+          },
+          "ShipCounty": {
+            "type": "string"
+          },
+          "ShipState": {
+            "type": "string"
+          },
+          "ShipPostalCode": {
+            "type": "string"
+          },
+          "ShipCountry": {
+            "type": "string"
+          },
+          "Phone1": {
+            "type": "string"
+          },
+          "GuestTerm": {
+            "type": "string"
+          },
+          "GuestTermPlural": {
+            "type": "string"
+          },
+          "GuestsInvited": {
+            "type": "integer"
+          },
+          "GuestsAttending": {
+            "type": "integer"
+          },
+          "GuestsNotAttending": {
+            "type": "integer"
+          },
+          "BookingTerm": {
+            "type": "string"
+          },
+          "BookingTermPlural": {
+            "type": "string"
+          },
+          "BookingsEnabled": {
+            "type": "boolean"
+          },
+          "Bookings": {
+            "type": "integer"
+          },
+          "Orders": {
+            "type": "integer"
+          },
+          "TotalSales": {
+            "type": "number"
+          },
+          "TotalVolume": {
+            "type": "number"
+          },
+          "BalanceDue": {
+            "type": "number"
+          },
+          "TotalSalesRewards": {
+            "type": "number"
+          },
+          "RetainedEarningsTerm": {
+            "type": "string"
+          },
+          "RetainedEarnings": {
+            "type": "number"
+          },
+          "AppliedRetainedEarnings": {
+            "type": "number"
+          },
+          "PartyCloseDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "PartyCloseDate": {
+            "type": "string"
+          },
+          "DownlineRepName": {
+            "type": "string"
+          },
+          "DownlineRepPhone": {
+            "type": "string"
+          },
+          "DownlineRepEmail": {
+            "type": "string"
+          },
+          "PartyTypeDescription": {
+            "type": "string"
+          },
+          "PartyStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "PartyStartTime": {
+            "type": "string"
+          },
+          "PartyStartDateTime": {
+            "type": "string"
+          },
+          "PartyEndDateTime": {
+            "type": "string"
+          },
+          "Format": {
+            "type": "integer",
+            "nullable": true
+          },
+          "Location": {
+            "type": "string"
+          },
+          "ShippingType": {
+            "type": "string"
+          },
+          "BillingType": {
+            "type": "string"
+          },
+          "EventURL": {
+            "type": "string"
+          },
+          "PartyGUID": {
+            "type": "string"
+          },
+          "EndDateTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "InternalNote": {
+            "type": "string"
+          },
+          "IsPartyFormatHiddenInUI": {
+            "type": "boolean"
+          },
+          "DistributionTypeID": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "QuickSummary": {
+        "type": "object",
+        "properties": {
+          "RankProgressPercentage": {
+            "type": "number"
+          },
+          "CurrentRankName": {
+            "type": "string"
+          },
+          "NextRankName": {
+            "type": "string"
+          },
+          "ProjectedCommissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectedCommission"
+            }
+          }
+        }
+      },
+      "ProjectedCommission": {
+        "type": "object",
+        "properties": {
+          "BonusRunID": {
+            "type": "integer"
+          },
+          "BonusPeriodDescription": {
+            "type": "string"
+          },
+          "CurrencyIdentifier": {
+            "type": "string"
+          },
+          "Amount": {
+            "type": "number"
+          },
+          "IsPaid": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

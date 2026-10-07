@@ -1,0 +1,25 @@
+meta {
+  name: Get Seamless Auth Token for Rep
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v2/authentication/seamless/forrep/:repdid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  repdid: 
+}
+
+docs {
+  `GET /api/v2/authentication/seamless/forrep/{repdid}`
+
+  Get a seamless authentication token for a rep, for sign-in to other Freedom Suite applications.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

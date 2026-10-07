@@ -1,0 +1,33 @@
+meta {
+  name: Create Payout Profile
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v2/rep/payoutprofile
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "RepDID": "",
+    "PayoutMethodID": 0,
+    "SetAsDefaultPayoutMethod": false,
+    "profileValues": [
+      {
+        "DetailNumber": 0,
+        "Value": ""
+      }
+    ]
+  }
+}
+
+docs {
+  `POST /api/v2/rep/payoutprofile`
+
+  Create a rep's payout profile for a payout method.
+
+  Required scope: `api/Write`
+}

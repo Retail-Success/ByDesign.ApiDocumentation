@@ -1,0 +1,27 @@
+meta {
+  name: Get Rep Autoship Volume Summary
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v2/rep/autoship/volumesummary/:repdid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  repdid: 
+}
+
+docs {
+  `GET /api/v2/rep/autoship/volumesummary/{repdid}`
+
+  Autoship volume summary for a rep.
+
+  Request/response models for this route are not published in this document; contact ByDesign for integration details.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Save Cash Payment
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order/payment/cash/save
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "OrderID": 0,
+    "PaymentDate": "2026-01-01T00:00:00Z",
+    "Amount": 0
+  }
+}
+
+docs {
+  `POST /api/v2/order/payment/cash/save`
+
+  Add a cash payment to an order.
+
+  Required scope: `api/Write`
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Submit Order Workflow
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order/workflow
+  body: none
+  auth: inherit
+}
+
+docs {
+  `POST /api/v2/order/workflow`
+
+  Submit an order workflow request.
+
+  Request/response models for this route are not published in this document; contact ByDesign for integration details.
+
+  Required scope: `api/Write`
+}

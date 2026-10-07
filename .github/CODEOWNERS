@@ -1,0 +1,7 @@
+# CODEOWNERS File for Repository Access Control
+
+# Purpose: This file defines who is responsible for code review in specific parts of the repository.
+# It automatically assigns reviewers when a pull request is created.
+
+# All changes require review from one of the following owners
+*                               @JoshB-KC @BrianM-ByDesign

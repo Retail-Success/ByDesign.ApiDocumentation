@@ -1,0 +1,19 @@
+meta {
+  name: List Inventory Categories
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/categorydetail
+  body: none
+  auth: inherit
+}
+
+docs {
+  `GET /api/v2/inventory/categorydetail`
+
+  List all inventory categories with full detail.
+
+  Required scope: `api/Read`
+}

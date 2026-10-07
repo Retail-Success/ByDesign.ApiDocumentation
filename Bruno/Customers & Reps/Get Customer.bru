@@ -1,0 +1,25 @@
+meta {
+  name: Get Customer
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v2/customer/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+docs {
+  `GET /api/v2/customer/{id}`
+
+  Returns profile information for a customer by customer DID.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

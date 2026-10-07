@@ -1,0 +1,25 @@
+meta {
+  name: Get Orders for Rep
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/ordersforrep/:repdid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  repdid: 
+}
+
+docs {
+  `GET /api/v2/order/ordersforrep/{repdid}`
+
+  Return the orders belonging to a rep.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Get Order Misc Fields
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/:orderid/miscfield
+  body: none
+  auth: inherit
+}
+
+params:path {
+  orderid: 
+}
+
+docs {
+  `GET /api/v2/order/{orderid}/miscfield`
+
+  Return all misc field values for an order.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Get Access Token
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/oauth2/token
+  body: formUrlEncoded
+  auth: none
+}
+
+body:form-urlencoded {
+  grant_type: client_credentials
+  client_id: {{clientId}}
+  client_secret: {{clientSecret}}
+  scope: api/Read api/Write
+}
+
+script:post-response {
+  if (res.getStatus() === 200 && res.getBody().access_token) {
+    bru.setVar("accessToken", res.getBody().access_token);
+  }
+}
+
+docs {
+  Exchanges your client id and client secret for an OAuth 2.0 access token.
+  The token is stored in the `accessToken` runtime variable and expires after one hour.
+
+  Remove `api/Write` from `scope` if your credentials are read-only.
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Save Credit Card Payment
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order/payment/creditcard/save
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "PaymentDate": "2026-01-01T00:00:00Z",
+    "Amount": 0,
+    "Last4CCNumber": "",
+    "ExpirationDateMMYY": "",
+    "CardHolderName": "",
+    "Address1": "",
+    "Address2": "",
+    "City": "",
+    "State": "",
+    "Country": "",
+    "PostalCode": "",
+    "AuthorizationCode": "",
+    "TransactionID": "",
+    "ReferenceNumber": "",
+    "CreditCardAccountId": "",
+    "CreditCardType": 1,
+    "OrderID": 0
+  }
+}
+
+docs {
+  `POST /api/v2/order/payment/creditcard/save`
+
+  Record a credit card payment for an order (storage of an already-processed transaction; not a charge).
+
+  Required scope: `api/Write`
+}

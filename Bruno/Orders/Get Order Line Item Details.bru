@@ -1,0 +1,25 @@
+meta {
+  name: Get Order Line Item Details
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/:orderid/lineitemdetails
+  body: none
+  auth: inherit
+}
+
+params:path {
+  orderid: 
+}
+
+docs {
+  `GET /api/v2/order/{orderid}/lineitemdetails`
+
+  Return detailed line-item information for an order.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

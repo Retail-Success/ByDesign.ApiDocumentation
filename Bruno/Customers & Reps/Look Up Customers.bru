@@ -1,0 +1,30 @@
+meta {
+  name: Look Up Customers
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v2/customer/lookup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "CustomerDID": "",
+    "FirstName": "",
+    "LastName": "",
+    "Phone": "",
+    "Email": "",
+    "getAll": false
+  }
+}
+
+docs {
+  `POST /api/v2/customer/lookup`
+
+  Look up customers by DID, name, phone, or email.
+
+  Required scope: `api/Write`
+}

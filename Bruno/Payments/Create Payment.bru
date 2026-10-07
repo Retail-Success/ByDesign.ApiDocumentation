@@ -1,0 +1,74 @@
+meta {
+  name: Create Payment
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order/payment/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "ID": 0,
+    "PaymentTypeID": 0,
+    "PaymentDate": "2026-01-01T00:00:00Z",
+    "OrderID": 0,
+    "Amount": 0,
+    "Detail1": "",
+    "Detail2": "",
+    "Detail3": "",
+    "Detail4": "",
+    "Detail5": "",
+    "Detail6": "",
+    "StatusTypeID": 0,
+    "MarketShowID": 0,
+    "Detail7": "",
+    "Detail8": "",
+    "Detail9": "",
+    "Detail10": "",
+    "Detail11": "",
+    "Detail12": "",
+    "CCAccount": "",
+    "CCAccountID": 0,
+    "PartyPaymentID": 0,
+    "PartyRewardID": 0,
+    "ImportBatchID": 0,
+    "DataRepairNotes": "",
+    "DebitCardAccountID": 0,
+    "GiftCardAccountID": 0,
+    "ECheckAccountID": 0,
+    "CurrencyTypeID": 0,
+    "Detail13": "",
+    "Detail14": "",
+    "Detail15": "",
+    "Detail16": "",
+    "Detail17": "",
+    "Detail18": "",
+    "DisconnectedAccountID": 0,
+    "PartyID": 0,
+    "IsBypass": false,
+    "TokenizedPaymentAccountID": 0,
+    "Detail19": "",
+    "PromissoryAmount": 0,
+    "CreatedBy": "",
+    "LastModifiedBy": "",
+    "DateLastModified": "2026-01-01T00:00:00Z",
+    "Detail20": "",
+    "Detail21": "",
+    "Detail22": "",
+    "Detail23": "",
+    "Detail24": "",
+    "Detail25": ""
+  }
+}
+
+docs {
+  `POST /api/v2/order/payment/create`
+
+  Create a payment record with default values. Required body fields: OrderID, Amount.
+
+  Required scope: `api/Write`
+}
