@@ -1,0 +1,25 @@
+meta {
+  name: Get Inventory Group Items
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/group/:sku
+  body: none
+  auth: inherit
+}
+
+params:path {
+  sku: 
+}
+
+docs {
+  `GET /api/v2/inventory/group/{sku}`
+
+  List the child items of an inventory group with their quantities.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

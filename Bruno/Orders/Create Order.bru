@@ -1,0 +1,169 @@
+meta {
+  name: Create Order
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "RepDID": "",
+    "RepID": 0,
+    "CustomerDID": "",
+    "PartyID": 0,
+    "OrderDate": "2026-01-01T00:00:00Z",
+    "BonusDate": "2026-01-01T00:00:00Z",
+    "MarketShowID": 0,
+    "BillingAddress": {
+      "ID": 0,
+      "Description": "",
+      "Street1": "",
+      "Street2": "",
+      "City": "",
+      "Company": "",
+      "State": "",
+      "PostalCode": "",
+      "County": "",
+      "Country": "",
+      "Phone": "",
+      "Email": "",
+      "FirstName": "",
+      "LastName": "",
+      "SpecialInstructions": "",
+      "SuggestedAddress": false,
+      "IsHiddenOnCart": false,
+      "IsOverrideAddress": false,
+      "IsDefaultProfile": 0
+    },
+    "ShippingAddress": {
+      "ID": 0,
+      "Description": "",
+      "Street1": "",
+      "Street2": "",
+      "City": "",
+      "Company": "",
+      "State": "",
+      "PostalCode": "",
+      "County": "",
+      "Country": "",
+      "Phone": "",
+      "Email": "",
+      "FirstName": "",
+      "LastName": "",
+      "SpecialInstructions": "",
+      "SuggestedAddress": false,
+      "IsHiddenOnCart": false,
+      "IsOverrideAddress": false,
+      "IsDefaultProfile": 0
+    },
+    "ShipGeoCode": "",
+    "InvoiceNotes": "",
+    "ShipMethodID": 0,
+    "TaxExemptCodeID": 0,
+    "IsTaxExempt": false,
+    "CurrencyTypeID": 0,
+    "SendAutoresponders": false,
+    "ShippingTotal": 0,
+    "ShippingTax": 0,
+    "HandlingFee": 0,
+    "HandlingTax": 0,
+    "InvoiceNumber": "",
+    "OrderDetails": [
+      {
+        "Quantity": 0,
+        "ProductID": "",
+        "PriceTaxFields": {
+          "Price": 0,
+          "TaxableAmount": 0,
+          "Tax": 0
+        },
+        "VolumeFields": {
+          "Volume": 0,
+          "Volume2": 0,
+          "Volume3": 0,
+          "Volume4": 0
+        },
+        "OtherPriceFields": {
+          "OtherPrice": 0,
+          "OtherPrice2": 0,
+          "OtherPrice3": 0,
+          "OtherPrice4": 0
+        },
+        "Misc": [
+          {}
+        ]
+      }
+    ],
+    "PaymentInfo": {
+      "ID": 0,
+      "PaymentTypeID": 0,
+      "PaymentDate": "2026-01-01T00:00:00Z",
+      "OrderID": 0,
+      "Amount": 0,
+      "Detail1": "",
+      "Detail2": "",
+      "Detail3": "",
+      "Detail4": "",
+      "Detail5": "",
+      "Detail6": "",
+      "StatusTypeID": 0,
+      "MarketShowID": 0,
+      "Detail7": "",
+      "Detail8": "",
+      "Detail9": "",
+      "Detail10": "",
+      "Detail11": "",
+      "Detail12": "",
+      "CCAccount": "",
+      "CCAccountID": 0,
+      "PartyPaymentID": 0,
+      "PartyRewardID": 0,
+      "ImportBatchID": 0,
+      "DataRepairNotes": "",
+      "DebitCardAccountID": 0,
+      "GiftCardAccountID": 0,
+      "ECheckAccountID": 0,
+      "CurrencyTypeID": 0,
+      "Detail13": "",
+      "Detail14": "",
+      "Detail15": "",
+      "Detail16": "",
+      "Detail17": "",
+      "Detail18": "",
+      "DisconnectedAccountID": 0,
+      "PartyID": 0,
+      "IsBypass": false,
+      "TokenizedPaymentAccountID": 0,
+      "Detail19": "",
+      "PromissoryAmount": 0,
+      "CreatedBy": "",
+      "LastModifiedBy": "",
+      "DateLastModified": "2026-01-01T00:00:00Z",
+      "Detail20": "",
+      "Detail21": "",
+      "Detail22": "",
+      "Detail23": "",
+      "Detail24": "",
+      "Detail25": ""
+    },
+    "OrderMisc": [
+      {
+        "Name": "",
+        "Value": ""
+      }
+    ]
+  }
+}
+
+docs {
+  `POST /api/v2/order`
+
+  Create a new (permanent) order for a representative or customer; the order is created in entered status.
+
+  Required scope: `api/Write`
+}

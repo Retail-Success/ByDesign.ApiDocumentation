@@ -1,0 +1,27 @@
+meta {
+  name: Get Rep Best Sellers
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v2/rep/bestsellers/:repdid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  repdid: 
+}
+
+docs {
+  `GET /api/v2/rep/bestsellers/{repdid}`
+
+  Best-selling products for a rep.
+
+  Request/response models for this route are not published in this document; contact ByDesign for integration details.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

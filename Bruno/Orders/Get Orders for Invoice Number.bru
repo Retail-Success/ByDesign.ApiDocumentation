@@ -1,0 +1,27 @@
+meta {
+  name: Get Orders for Invoice Number
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/ordersforinvoicenumber/:invoicenumber
+  body: none
+  auth: inherit
+}
+
+params:path {
+  invoicenumber: 
+}
+
+docs {
+  `GET /api/v2/order/ordersforinvoicenumber/{invoicenumber}`
+
+  Get orders matching an invoice number.
+
+  Request/response models for this route are not published in this document; contact ByDesign for integration details.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

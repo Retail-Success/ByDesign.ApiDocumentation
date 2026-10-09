@@ -1,0 +1,25 @@
+meta {
+  name: Get Rep Dashboard Summary
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v2/rep/dashboard/summary/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+docs {
+  `GET /api/v2/rep/dashboard/summary/{id}`
+
+  Quick summary: current rank, next rank, progress toward it, and projected commissions.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

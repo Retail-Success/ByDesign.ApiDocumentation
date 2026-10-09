@@ -1,0 +1,32 @@
+meta {
+  name: Get Credit Accounts for Rep
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/paymentcredit/creditaccounts/:repdid
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~customerDID: 
+  ~creditAccountId: 
+}
+
+params:path {
+  repdid: 
+}
+
+docs {
+  `GET /api/v2/order/paymentcredit/creditaccounts/{repdid}`
+
+  Get credit accounts for a rep (optionally scoped to a customer or a specific credit account).
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

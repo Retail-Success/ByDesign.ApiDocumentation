@@ -1,0 +1,31 @@
+meta {
+  name: Get Rep
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v2/rep/:id
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~returnCancelledOverride: 
+}
+
+params:path {
+  id: 
+}
+
+docs {
+  `GET /api/v2/rep/{id}`
+
+  Returns profile information for a representative, looked up by Rep DID or replicated-site URL.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

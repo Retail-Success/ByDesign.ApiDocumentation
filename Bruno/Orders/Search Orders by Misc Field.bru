@@ -1,0 +1,26 @@
+meta {
+  name: Search Orders by Misc Field
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/miscfieldsearch/:fieldname/:valuetosearch
+  body: none
+  auth: inherit
+}
+
+params:path {
+  fieldname: 
+  valuetosearch: 
+}
+
+docs {
+  `GET /api/v2/order/miscfieldsearch/{fieldname}/{valuetosearch}`
+
+  Search orders for a misc field value and return the matching order numbers.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

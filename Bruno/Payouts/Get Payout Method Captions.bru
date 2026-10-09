@@ -1,0 +1,25 @@
+meta {
+  name: Get Payout Method Captions
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v2/payoutmethod/captions/:payoutmethodid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  payoutmethodid: 
+}
+
+docs {
+  `GET /api/v2/payoutmethod/captions/{payoutmethodid}`
+
+  Get the captions (field labels) for a payout method, used to build payout profiles.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

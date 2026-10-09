@@ -1,0 +1,25 @@
+meta {
+  name: Get Rep Public Info
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v2/rep/publicinfo/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+docs {
+  `GET /api/v2/rep/publicinfo/{id}`
+
+  Retrieve the public information for an active or cancelled rep account.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

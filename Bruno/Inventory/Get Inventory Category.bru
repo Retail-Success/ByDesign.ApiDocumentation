@@ -1,0 +1,25 @@
+meta {
+  name: Get Inventory Category
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/categorydetail/:categoryid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  categoryid: 
+}
+
+docs {
+  `GET /api/v2/inventory/categorydetail/{categoryid}`
+
+  Get a specific inventory category by id.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

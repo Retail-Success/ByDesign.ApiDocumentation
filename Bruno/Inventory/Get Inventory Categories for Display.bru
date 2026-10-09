@@ -1,0 +1,37 @@
+meta {
+  name: Get Inventory Categories for Display
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/category/:sku
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~repDID: 
+  ~customerDID: 
+  ~langKey: 
+  ~country: 
+  ~orderType: 
+  ~localeID: 
+  ~cartConfigurationId: 
+}
+
+params:path {
+  sku: 
+}
+
+docs {
+  `GET /api/v2/inventory/category/{sku}`
+
+  List inventory categories for display, filtered by rep/customer, locale, and cart configuration.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

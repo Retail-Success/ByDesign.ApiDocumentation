@@ -1,0 +1,25 @@
+meta {
+  name: Get Inventory Media
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/media/:productid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  productid: 
+}
+
+docs {
+  `GET /api/v2/inventory/media/{productid}`
+
+  Return the media (images/video) for an inventory item.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

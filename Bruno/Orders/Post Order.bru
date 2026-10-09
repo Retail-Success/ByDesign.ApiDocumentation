@@ -1,0 +1,25 @@
+meta {
+  name: Post Order
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order/:orderid/post
+  body: none
+  auth: inherit
+}
+
+params:path {
+  orderid: 
+}
+
+docs {
+  `POST /api/v2/order/{orderid}/post`
+
+  Post (make official) an unofficial order.
+
+  Required scope: `api/Write`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

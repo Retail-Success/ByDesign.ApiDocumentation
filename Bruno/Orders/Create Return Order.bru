@@ -1,0 +1,63 @@
+meta {
+  name: Create Return Order
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v2/order/returnorder/:fromorderid
+  body: json
+  auth: inherit
+}
+
+params:path {
+  fromorderid: 
+}
+
+body:json {
+  {
+    "OrderDate": "2026-01-01T00:00:00Z",
+    "ReasonCodeTypeID": 0,
+    "Explanation": "",
+    "ShippingChargeType": 0,
+    "HandlingChargeType": 0,
+    "ShippingChargeValue": 0,
+    "ShippingTaxValue": 0,
+    "HandlingChargeValue": 0,
+    "HandlingTaxValue": 0,
+    "ReturnItemList": [
+      {
+        "Quantity": 0,
+        "OrderDetailID": 0,
+        "ProductID": "",
+        "PriceTaxFields": {
+          "Price": 0,
+          "TaxableAmount": 0,
+          "Tax": 0
+        },
+        "VolumeFields": {
+          "Volume": 0,
+          "Volume2": 0,
+          "Volume3": 0,
+          "Volume4": 0
+        },
+        "OtherPriceFields": {
+          "OtherPrice": 0,
+          "OtherPrice2": 0,
+          "OtherPrice3": 0,
+          "OtherPrice4": 0
+        }
+      }
+    ]
+  }
+}
+
+docs {
+  `POST /api/v2/order/returnorder/{fromorderid}`
+
+  Create a return order for an existing order (fromOrderId).
+
+  Required scope: `api/Write`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

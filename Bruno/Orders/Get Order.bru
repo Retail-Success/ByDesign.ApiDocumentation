@@ -1,0 +1,25 @@
+meta {
+  name: Get Order
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/:orderid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  orderid: 
+}
+
+docs {
+  `GET /api/v2/order/{orderid}`
+
+  Get a specific order by id.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

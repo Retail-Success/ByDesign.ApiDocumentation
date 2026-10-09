@@ -1,0 +1,31 @@
+meta {
+  name: Get Payments
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v2/order/payment/:orderid
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~paymentID: 
+}
+
+params:path {
+  orderid: 
+}
+
+docs {
+  `GET /api/v2/order/payment/{orderid}`
+
+  Get a payment by paymentID, or all payments for an order by orderID (supply exactly one).
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

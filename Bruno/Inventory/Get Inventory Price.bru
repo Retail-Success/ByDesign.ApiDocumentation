@@ -1,0 +1,33 @@
+meta {
+  name: Get Inventory Price
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/price/:productid/:rankpricetypeid
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~rankTypeID: 
+  ~priceType: 
+}
+
+params:path {
+  productid: 
+  rankpricetypeid: 
+}
+
+docs {
+  `GET /api/v2/inventory/price/{productid}/{rankpricetypeid}`
+
+  Get the price and rank-price values for an inventory item.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

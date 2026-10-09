@@ -1,0 +1,32 @@
+meta {
+  name: Get Inventory Detail
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/detail/:sku
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~pageSize: 
+  ~pageNumber: 
+}
+
+params:path {
+  sku: 
+}
+
+docs {
+  `GET /api/v2/inventory/detail/{sku}`
+
+  Return the inventory summary for a given Product ID (omit productID to page through all items).
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

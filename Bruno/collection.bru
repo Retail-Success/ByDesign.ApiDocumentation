@@ -1,0 +1,21 @@
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+headers {
+  x-api-key: {{apiKey}}
+}
+
+docs {
+  # ByDesign API v2
+
+  1. Select the **ByDesign** environment and set `baseUrl` to your API URL from the
+     ByDesign back office. Enter `clientId`, `clientSecret` and `apiKey` as secret values.
+  2. Run **Get Access Token**. Its post-response script stores the token in the
+     `accessToken` runtime variable, which every other request sends as a Bearer token.
+  3. Tokens last one hour. Run **Get Access Token** again when requests start returning `401`.
+}
