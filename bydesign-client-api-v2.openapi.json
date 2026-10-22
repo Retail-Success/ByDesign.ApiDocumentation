@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "ByDesign Client API (v2)",
-    "version": "2026-09-25",
+    "version": "2026-10-12",
     "description": "REST API for ByDesign partners and integrations.\n\n## Authentication\nEvery request needs two headers:\n1. `Authorization: Bearer <token>` — an OAuth 2.0 client-credentials token from `https://{client-domain}/oauth2/token`. The token endpoint is served on the same host as the API. `GET` routes need scope `api/Read`; write verbs need `api/Write`. Request only the scopes you need. Tokens expire after one hour — cache and reuse them.\n2. `x-api-key: <api key>` — your API key.\n\nGenerate your client id, client secret and API key, and look up your API URL, in the ByDesign back office. All hostnames in this document are placeholders; replace `{client-domain}` with the host from your API URL."
   },
   "servers": [
@@ -25,7 +25,13 @@
       "name": "Orders"
     },
     {
+      "name": "Cart"
+    },
+    {
       "name": "Payments"
+    },
+    {
+      "name": "Shipping"
     },
     {
       "name": "Customers & Reps"
@@ -47,6 +53,170 @@
     }
   ],
   "paths": {
+    "/api/v2/authentication/seamless/forcustomer/{customerdid}": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get a seamless authentication token for a customer, for sign-in to other Freedom Suite applications.",
+        "operationId": "v2_get_api_authentication_seamless_forcustomer_customerdid",
+        "parameters": [
+          {
+            "name": "customerdid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer number (CustomerDID) of the customer to sign in."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeamlessAuthenticationToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Customer not found (plain-text body: Invalid Customer Information was given.)"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/authentication/seamless/verify/forrep/{guid}": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Exchange a one-time seamless-login token (the guid) for the rep's identity and an access token; each guid can be used once.",
+        "operationId": "v2_get_api_authentication_seamless_verify_forrep_guid",
+        "parameters": [
+          {
+            "name": "guid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "One-time seamless-login token (the Token value returned when a seamless authentication token was requested for the rep)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeamlessAuthenticationViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "guid is not a valid GUID or does not match an issued token (plain-text body: Invalid Guid); Token is redeemed from a different IP address than the one it was issued to, when IP checking is enabled (plain-text body: Invalid IP Address); Token has already been used (plain-text body: Guid previously used); Token has expired or the rep no longer exists (plain-text body: Invalid Rep Information was given.); Rep is cancelled (plain-text body: The representative is Cancelled and cannot be used to create or update an order.)"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/authentication/seamless/verify/forcustomer/{guid}": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Exchange a one-time seamless-login token (the guid) for the customer's identity and an access token; each guid can be used once.",
+        "operationId": "v2_get_api_authentication_seamless_verify_forcustomer_guid",
+        "parameters": [
+          {
+            "name": "guid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "One-time seamless-login token (the Token value returned when a seamless authentication token was requested for the customer)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeamlessAuthenticationViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "guid is not a valid GUID (plain-text body: Invalid Guid)"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "guid does not match an issued token (plain-text body: Invalid Guid); Token is redeemed from a different IP address than the one it was issued to, when IP checking is enabled (plain-text body: Invalid IP Address); Token has already been used (plain-text body: Guid previously used)"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Token has expired, or the customer's account status does not allow ordering (returned as a generic server error)"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
     "/api/v2/inventory/detail/{sku}": {
       "get": {
         "tags": [
@@ -61,7 +231,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "When omitted, returns a paged array (pageSize/pageNumber)"
           },
           {
             "name": "pageSize",
@@ -446,7 +617,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           },
           {
@@ -482,6 +653,471 @@
           },
           "400": {
             "description": "ProductID not found or no matching inventory prices"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/shopping": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Return the shopping catalog products, with pricing, stock messages and images, that a rep or customer can buy, or a single product when productID is supplied; OData query options ($filter, $top, $orderby, $select) are supported.",
+        "operationId": "v2_get_api_inventory_inventoryshopping",
+        "parameters": [
+          {
+            "name": "productID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "When supplied, returns that single product instead of the list."
+          },
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Rep whose pricing applies. Supply repDID or customerDID, or else supply both rankPriceTypeID and rankPriceTypeID_autoShip."
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer whose pricing applies. Supply repDID or customerDID, or else supply both rankPriceTypeID and rankPriceTypeID_autoShip."
+          },
+          {
+            "name": "langKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Language/locale key used for translations, e.g. en-us. Required unless localeID is supplied."
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Locale ID used for translations. Overrides langKey when supplied."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Shopping country (recommended). When omitted, the country may be taken from the rep's or customer's shipping country."
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "R for a rep order or C for a customer order. For the list it defaults from customerDID. For a single product lookup it defaults to R."
+          },
+          {
+            "name": "rankPriceTypeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Price type for standard purchases. Required with rankPriceTypeID_autoShip when neither repDID nor customerDID is supplied."
+          },
+          {
+            "name": "rankPriceTypeID_autoShip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Price type for AutoShip purchases. Required with rankPriceTypeID when neither repDID nor customerDID is supplied."
+          },
+          {
+            "name": "cartConfigurationId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Cart configuration, which may limit the inventory that is available."
+          },
+          {
+            "name": "partyID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "When supplied, party-related items and pricing are considered."
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "List only: restrict the results to this category. 0 means all categories."
+          },
+          {
+            "name": "includeChildItems",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "List only: include child inventory items in the results."
+          },
+          {
+            "name": "selectedFilterOptions",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "List only: comma-separated filter option IDs used to narrow the results."
+          },
+          {
+            "name": "loadSecondaryCategory",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "List only: when true, groups results by the categories shown on the cart category page, with a limited number of products per category."
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "List only: keep products whose product ID, display name or search terms contain this text. Exact and prefix matches are ranked first."
+          },
+          {
+            "name": "top",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "List only: maximum number of products to return. 0 returns all."
+          },
+          {
+            "name": "excludedItems",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "List only: comma-separated numeric inventory IDs to exclude."
+          },
+          {
+            "name": "onlyRenewalItems",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "List only: when true, returns only rep renewal items."
+          },
+          {
+            "name": "getParent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Single product only: when true, returns the parent item of the requested productID."
+          },
+          {
+            "name": "forceProduct",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Single product only: when true, looks up the requested product directly, even if it would not normally appear in the catalog list."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryShoppingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "orderType is something other than R or C; Neither repDID nor customerDID is supplied, and rankPriceTypeID and rankPriceTypeID_autoShip are not both greater than 0; The supplied repDID or customerDID does not exist, or the rep is cancelled; Neither langKey nor localeID is supplied, or no active locale is found; productID is supplied but the product is not found or not available (Invalid ProductID)"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "excludedItems contains a value that is not numeric"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/review/{productid}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List the approved reviews for a product.",
+        "operationId": "v2_get_api_inventory_inventoryreview_productid_productid",
+        "parameters": [
+          {
+            "name": "productid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Product ID (item number) whose approved reviews are returned."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryReview"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "The product ID was not found. A product with no approved reviews returns an empty array."
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/warehouse/{productid}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List a product's stock levels in each warehouse, including on-hand, ideal and reorder quantities and cost.",
+        "operationId": "v2_get_api_inventory_inventorywarehouse",
+        "parameters": [
+          {
+            "name": "productid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Product ID (item number) to return warehouse stock for."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryWarehouseViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "The productID was not found (ProductID not found.); The product has no warehouse records (WarehouseID not found.)"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/inventory/collection/{inventorycollectionid}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List the products in an inventory collection that can be bought on a back-office order, priced for the given rep or customer; some of them may not be purchasable online, and OData query options ($filter, $top, $orderby, $select) are supported.",
+        "operationId": "v2_get_api_inventory_collection_inventorycollectionid_forbackofficeorder",
+        "parameters": [
+          {
+            "name": "inventorycollectionid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the inventory collection."
+          },
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Rep whose pricing applies. Supply repDID, customerDID, or both."
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer whose pricing applies. Supply repDID, customerDID, or both."
+          },
+          {
+            "name": "langKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Language/locale key used for translations, e.g. en-us. Required in practice: the request is rejected when it is empty."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Shopping country (recommended). When omitted, the country may be taken from the rep's or customer's shipping country."
+          },
+          {
+            "name": "includeChildItems",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include child relationship items in the results."
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "R for a rep order or C for a customer order. When omitted, it is based on customerDID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryShoppingDisplayViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "langKey is empty (No langKey was provided.), or no active locale is found; The supplied repDID or customerDID does not exist, or the rep is cancelled; Neither repDID nor customerDID is supplied (No user information was provided.); The inventory collection ID does not exist (An invalid inventory collection was provided.); orderType is something other than R or C"
           },
           "401": {
             "description": "Missing, malformed, or expired Bearer token"
@@ -670,7 +1306,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Name of the misc field to search."
           },
           {
             "name": "valuetosearch",
@@ -678,7 +1315,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Value to match against that field. The search requires an exact match."
           }
         ],
         "responses": {
@@ -732,7 +1370,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Rep number whose orders are returned."
           }
         ],
         "responses": {
@@ -879,7 +1518,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -943,7 +1582,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -1134,6 +1773,1269 @@
         ]
       }
     },
+    "/api/v2/onlineorderdetail/byonlineorderid/{onlineorderid}": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "List the items in an online order (shopping cart), optionally including items that were added by promotions.",
+        "operationId": "v2_get_api_order_onlineorderdetail_byonlineorderid",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The online order (cart) whose items are returned."
+          },
+          {
+            "name": "includePromotions",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include items that were added to the online order by promotions."
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Locale used for localized item text such as DisplayName."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Returns an empty array when the online order has no items or does not exist. Items marked for AutoShip have IsAutoShip set to true.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OnlineOrderDetailViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorderdetail": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Add a product to an online order: send productId (and optionally quantity) in the query string with an optional array of misc fields as the body, or leave productId out and send the with-overrides payload, which carries ProductID, Quantity and Misc in the body (its overridden values are not currently applied on this route).",
+        "operationId": "v2_post_api_order_onlineorderdetail",
+        "parameters": [
+          {
+            "name": "onlineOrderId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The online order (cart) to add the item to."
+          },
+          {
+            "name": "productId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Product to add. Required unless the body is the with-overrides payload. Including productId selects the plain add, and the body is then read as an array of misc fields. Leave it out to send the with-overrides payload, which carries ProductID in the body."
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Plain add only: quantity to add. Fewer units may be added if stock is limited. The with-overrides payload uses its own Quantity field."
+          },
+          {
+            "name": "shouldCalculateTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Plain add only: whether tax is recalculated after the item is added. The with-overrides variant always recalculates tax and ignores this value."
+          },
+          {
+            "name": "forceSeparate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Plain add only: create a separate line even if the product is already in the cart. The with-overrides payload uses its own ForceSeparate field, which defaults to true."
+          },
+          {
+            "name": "relationshipGroupID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Adds the item as part of this relationship group. Applies to both variants."
+          },
+          {
+            "name": "sourceProgrammingKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Identifies the third-party source that added the item. Applies to both variants."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created — Success returns 201 Created with a Location header for the new line. If stock is limited, fewer units than requested may be added. Check quantity in the response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrderDetailCreateResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "LOCKED: the online order is locked while its payment is being processed. The body is {\"Message\":\"LOCKED\"}.; The product ID is invalid (message \"Invalid ProductID.\", translated).; None of the requested quantity could be reserved (message \"Stock is no longer available.\", translated).; The item could not be added. The message is the first validation error."
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unexpected server error, which can include an online order ID that does not exist."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnlineOrderDetailCreateRequest"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Change the quantity of an online order line: send quantity in the query string with no body for a plain update, or leave quantity out and send the optional overrides body to set the quantity together with overridden price, tax, volume and other-price values.",
+        "operationId": "v2_put_api_order_onlineorderdetail",
+        "parameters": [
+          {
+            "name": "onlineOrderDetailId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The online order line to update."
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Required for a plain quantity update (no body). Including quantity selects the plain update, and any body is ignored. 0 removes the line. Leave it out to use the overrides body instead."
+          },
+          {
+            "name": "shouldCalculateTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Whether tax is recalculated after the update. When false, Tax and TaxableAmount overrides are applied and default to 0 if not supplied."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Success returns 200 with the updated line. Returns 200 with an empty body when the line was removed: either quantity was 0, or no stock could be reserved for the line.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrderDetailViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The online order line was not found (message \"Online Order Detail not found\").; LOCKED: the online order is locked while its payment is being processed.; The update failed. The message is the first validation error, or \"Unable to complete your request due to quantity limitations or access rights\"."
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "The requested quantity is not one of the product's allowed quantity options."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnlineOrderDetailWithOverridesViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/order/{orderid}/address": {
+      "put": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Update the billing and/or shipping address of an order and, by default, recalculate its taxes.",
+        "operationId": "v2_put_api_order_order_address",
+        "parameters": [
+          {
+            "name": "orderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The order to update."
+          },
+          {
+            "name": "shouldCalculateTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Set to false to skip recalculating taxes after the address change."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Success returns 200 with the updated order totals. On a party order in Entered status, changing the ship country removes all items from the order, switches the order currency to the new country's currency, releases reserved stock and clears shipping totals. Taxes are then recalculated only if items remain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResultOfOrderSummaryViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Neither BillingAddress nor ShippingAddress was supplied. ApiResult with key WEBAPI.UPDATEADDRESS.SHIPPINGORBILLINGADDRESSREQUIRED.; The ship country was changed on an order that is not in Entered status. Key WEBAPI_UPDATEADDRESS_SHIPCOUNTRY_NOT_CHANGED.; On a party order whose ship country is changing, the new ship country was not found. Key WEBAPI_UPDATEADDRESS_COUNTRY_NOT_FOUND.; The update failed validation (IsSuccessful false, with details in Messages), or an inventory item on the order is invalid."
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "The order was not found. ApiResult with key WEBAPI.UPDATEADDRESS.ORDERIDNOTFOUND."
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unexpected error, with key WEBAPI.UPDATEADDRESS.EXTENDEDERROR.<ErrorType>."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAddressViewModel"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/promotion/applysuggestedpromotion": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Apply a suggested promotion to an online order or an order, using the products and quantities the shopper selected for it.",
+        "operationId": "v2_post_api_promotion_applysuggestedpromotion",
+        "parameters": [
+          {
+            "name": "onlineOrderId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Online order (cart) to apply the promotion to. Send either onlineOrderId or orderId, not both."
+          },
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Order to apply the promotion to. Send either onlineOrderId or orderId, not both."
+          },
+          {
+            "name": "promotionId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "The suggested promotion to apply. In practice this is required: it must identify an existing promotion."
+          },
+          {
+            "name": "quantityEarned",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Quantity earned for the suggested promotion, as reported when promotions are evaluated."
+          },
+          {
+            "name": "calcTaxes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Recalculate taxes after the promotion is applied. For orders, shipping is always recalculated."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created — Success returns 201 Created with a JSON string confirmation. If the tax or shipping recalculation fails after the promotion is applied, the request still succeeds and no error is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplySuggestedPromotionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Both onlineOrderId and orderId were supplied (\"Error, please pass only OrderID or OnlineOrderID, not both\").; The online order or order does not exist, or neither ID was supplied (\"Invalid Online Order Id information was provided.\" / \"Invalid Order Id information was provided.\").; promotionId does not identify a promotion (\"An invalid promotion ID was passed in\").; The promotion could not be applied. The message is the first validation error."
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "The request body (the array of selected items) was missing."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SuggestedPromotionViewModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Create a new shopping cart for a rep or customer, optionally adding products to it.",
+        "operationId": "v2_post_api_order_onlineorder",
+        "parameters": [
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Rep the cart is for; required when customerDID is not supplied. On customer carts, a different referring rep is honored only when the company allows customers to order under another rep."
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer the cart is for; the cart is placed under the customer's rep."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Country the shopper is shopping in."
+          },
+          {
+            "name": "shouldCalculateTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Calculate tax as products are added."
+          },
+          {
+            "name": "partyGuid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Party to associate the cart with (customer carts only)."
+          },
+          {
+            "name": "cartConfigurationID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Cart configuration to use."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — The request body is optional; omit it to create an empty cart. Total is not populated (null) in this response; TotalProductPrice is the item subtotal. Products with a quantity of 0 or less are skipped, as are products that cannot be reserved when inventory reservation is enabled. Items flagged IsAutoShip are also added to the cart's autoship.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrderViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Neither repDID nor customerDID was supplied; cartConfigurationID does not match an existing cart configuration; Invalid or cancelled rep, invalid customer, or the customer is assigned to an invalid rep"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NewOnlineOrderDetailViewModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder/foronlinesignup": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Create a shopping cart for an in-progress enrollment, optionally adding products to it.",
+        "operationId": "v2_post_api_order_onlineorder_createforonlinesignup",
+        "parameters": [
+          {
+            "name": "onlineSignupGuid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Enrollment (online signup) the cart is for."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Shopping country; used when the enrollment has no billing or shipping country, and to set the cart's currency."
+          },
+          {
+            "name": "cartConfigurationID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Cart configuration to use."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — The cart's addresses and email are copied from the enrollment. Items is always empty in this response and the totals do not include the added products. UnresolvedProductIDs lists submitted ProductIDs that could not be found or priced and were skipped. Products with a quantity of 0 or less are ignored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrderViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "cartConfigurationID does not match an existing cart configuration; The cart could not be created"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "No enrollment exists for onlineSignupGuid; Enrollment pricing (rank price types) is not configured"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "onlineSignupGuid is not a valid GUID"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NewOnlineOrderDetailViewModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder/clear/{onlineorderid}": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Remove all items from a shopping cart so the shopper can start over.",
+        "operationId": "v2_post_api_order_onlineorder_clear",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Shopping cart (online order) to clear."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content — Returns an empty response (204 No Content). Any inventory reserved for the cart is released. Nothing happens if the cart does not exist or has already been completed."
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder/latest": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get the shopper's most recent incomplete shopping cart, creating a new one if none exists.",
+        "operationId": "v2_post_api_order_onlineorder_latest",
+        "parameters": [
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Rep the cart belongs to; required unless customerDID is supplied."
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer the cart belongs to, for customer shopping."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Country the shopper is shopping in."
+          },
+          {
+            "name": "languageKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Language key (for example en-us) used to translate item details; required when localeID is not supplied."
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Locale used to translate item details; takes precedence over languageKey."
+          },
+          {
+            "name": "cartConfigurationID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Cart configuration to use."
+          },
+          {
+            "name": "onlineOrderID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Reuse this cart if it is still incomplete."
+          },
+          {
+            "name": "onBehalfRepGUID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Downline-ordering session ID; when supplied, the cart is placed on behalf of that session's downline rep."
+          },
+          {
+            "name": "partyGuid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Party to associate the cart with; omit to keep the cart's current party, or send an empty value to remove it."
+          },
+          {
+            "name": "claimRewards",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Return a cart with no items, for claiming rewards."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Items lists the cart contents. The returned ID can differ from onlineOrderID when the cart had to be recreated (for example, after a country or pricing-level change); existing items are carried over.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrderViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Neither languageKey nor localeID was supplied, or no active locale exists; Invalid or cancelled rep, invalid customer, or no rep could be determined for the cart (including an on-behalf session with no downline rep); cartConfigurationID does not match an existing cart configuration"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "onBehalfRepGUID is not a valid GUID"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder/additemstolatest": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get the shopper's most recent incomplete shopping cart (creating one if needed) and add the supplied products to it.",
+        "operationId": "v2_post_api_order_onlineorder_additemstolatest",
+        "parameters": [
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Rep the cart belongs to; required unless customerDID is supplied."
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer the cart belongs to, for customer shopping."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Country the shopper is shopping in."
+          },
+          {
+            "name": "shouldCalculateTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Calculate tax as products are added."
+          },
+          {
+            "name": "languageKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Language key (for example en-us) used to translate item details; required when localeID is not supplied."
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Locale used to translate item details; takes precedence over languageKey."
+          },
+          {
+            "name": "cartConfigurationID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Cart configuration to use."
+          },
+          {
+            "name": "onlineOrderID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Reuse this cart if it is still incomplete."
+          },
+          {
+            "name": "onBehalfRepGUID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Downline-ordering session ID; when supplied, the cart is placed on behalf of that session's downline rep."
+          },
+          {
+            "name": "partyGuid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Party to associate the cart with; omit to keep the cart's current party, or send an empty value to remove it."
+          },
+          {
+            "name": "claimRewards",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Return a cart with no items, for claiming rewards."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — If a product is already in the cart, the supplied quantity is added to it, or replaces it when the product only allows fixed quantity options. Items and TotalProductPrice include the added products, but Total is read before they are added. The returned ID can differ from onlineOrderID when the cart had to be recreated (for example, after a country or pricing-level change).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrderViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Neither languageKey nor localeID was supplied, or no active locale exists; Invalid or cancelled rep, invalid customer, or no rep could be determined for the cart (including an on-behalf session with no downline rep); cartConfigurationID does not match an existing cart configuration"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "A product's quantity is not one of its allowed quantity options; A product that is not already in the cart is sent without a Misc array (send an empty array); onBehalfRepGUID is not a valid GUID"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/NewOnlineOrderDetailViewModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder/totals/{onlineorderid}": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get a shopping cart's current total, shipping total, and handling fee after applying gift certificate and credit amounts.",
+        "operationId": "v2_get_api_order_onlineorder_totals",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Shopping cart (online order) ID."
+          },
+          {
+            "name": "giftCertificatesApplied",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Gift certificate amount to subtract from the total."
+          },
+          {
+            "name": "creditsApplied",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Credit amount to subtract from the total."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlineOrderTotalsViewModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Online order not found"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder/{onlineorderid}/shipmethod": {
+      "put": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Change a shopping cart's shipping method and return the recalculated shipping, tax, and totals.",
+        "operationId": "v2_put_api_order_onlineorder_onlineorderid_updateshipmethod",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Shopping cart (online order) ID."
+          },
+          {
+            "name": "shipMethodID",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Shipping method to set on the cart."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateShipMethodViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_SHIPMETHODID: shipping method not found; INVALID_ONLINEORDERID: online order not found; The shipping change could not be saved (validation messages returned); Unable to get order totals"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/onlineorder/{onlineorderid}/shipmethodwithoverrides": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Change a shopping cart's shipping method with optional shipping, handling, and tax override amounts, and return the recalculated totals.",
+        "operationId": "v2_post_api_order_onlineorder_onlineorderid_updateshipmethodwithoverrides",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Shopping cart (online order) ID."
+          },
+          {
+            "name": "shipMethodID",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Shipping method to set on the cart."
+          },
+          {
+            "name": "ShippingTotal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Shipping amount to charge instead of the calculated rate."
+          },
+          {
+            "name": "ShippingTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Shipping tax to charge; ignored when shouldCalculateTax is true."
+          },
+          {
+            "name": "ShippingTaxCodeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tax code for the shipping tax; ignored when shouldCalculateTax is true."
+          },
+          {
+            "name": "HandlingFee",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Handling fee to charge instead of the calculated fee."
+          },
+          {
+            "name": "HandlingTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number"
+            },
+            "description": "Handling tax to charge; ignored when shouldCalculateTax is true."
+          },
+          {
+            "name": "HandlingTaxCodeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tax code for the handling tax; ignored when shouldCalculateTax is true."
+          },
+          {
+            "name": "shouldCalculateTax",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Recalculate tax after the change; when true, the tax override values are ignored."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Supplying override values marks the cart's shipping as overridden. When shouldCalculateTax is true and ShippingTotal or HandlingFee is omitted or 0, that charge is recalculated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateShipMethodViewModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_SHIPMETHODID: shipping method not found; INVALID_ONLINEORDERID: online order not found; The shipping change could not be saved (validation messages returned); Unable to get order totals"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
     "/api/v2/order/payment/creditcard/save": {
       "post": {
         "tags": [
@@ -1309,8 +3211,9 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            }
+              "type": "integer"
+            },
+            "description": "Returns an array of payments for the order"
           },
           {
             "name": "paymentID",
@@ -1423,6 +3326,422 @@
         ]
       }
     },
+    "/api/v2/payments/checkoutpaymentoption/{onlineorderid}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "List the payment methods (credit card accounts and check) that can be used to pay for a checkout order.",
+        "operationId": "v2_get_api_payments_checkoutpaymentoption",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the online (cart) order being checked out."
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Locale ID used to translate payment method names."
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The order's ship country, using the same value as the country on the order's shipping address. Determines which territory's payment methods apply."
+          },
+          {
+            "name": "ccSourceTypeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Checkout source type. Pass 4 (Checkout 2.0) to return the card accounts configured for Checkout 2.0. If you omit it or pass any other value, the territory's configured checkout version decides."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — The list is sorted by PaymentTypeID and filtered by the territory, the order type (rep, customer or enrollment) and the rep or customer type. Credit card comes back as one entry per available card account, each with a CCAccountID. If no card accounts are available for the order, no credit card entry is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentOptionViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "onlineOrderID or localeID is not a valid integer"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "A required query parameter (onlineOrderID, localeID or country) is missing"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "The online order does not exist, or the country does not match a configured territory"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/payments/checkoutpaymentoption/credits/{onlineorderid}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "List the account credits that the shopper can apply to a checkout order.",
+        "operationId": "v2_get_api_payments_checkoutpaymentoption_credits",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the online (cart) order being checked out."
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Locale ID used to translate credit account names."
+          },
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "DID of the rep whose credits are returned."
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "DID of the customer whose credits are returned."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Only accounts with a positive available balance are returned. If neither repDID nor customerDID is supplied, credits are returned only for enrollment orders whose enrollee is an existing customer. The array is empty when credits are not enabled for the shopping cart.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CheckoutPaymentCreditViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "repDID does not match a rep (\"Invalid Rep Information was given.\"), or the rep is cancelled; customerDID does not match a customer (\"Invalid Customer Information was given.\"); onlineOrderID or localeID is not a valid integer"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "onlineOrderID or localeID is missing"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "The online order does not exist and neither repDID nor customerDID was supplied"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/payments/checkoutpaymentoption/giftcertificates/{onlineorderid}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "List the gift certificates that the shopper can apply to a checkout order, and flag any that cannot be used with the items in the cart.",
+        "operationId": "v2_get_api_payments_checkoutpaymentoption_giftcertificates",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the online (cart) order being checked out."
+          },
+          {
+            "name": "repDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "DID of the rep whose gift certificates are returned. Takes precedence over customerDID."
+          },
+          {
+            "name": "customerDID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "DID of the customer whose gift certificates are returned."
+          },
+          {
+            "name": "onBehalfRepID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Numeric rep ID of a downline rep being shopped for. Applies only when repDID is also supplied; that downline rep's gift certificates are then returned instead."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Returns up to 100 active, unexpired certificates with a positive remaining balance, ordered by expiration date and then by amount. IsUnavailable is true for a certificate that cannot be used for one or more items in the cart. If neither repDID nor customerDID is supplied, certificates are returned only for enrollment orders whose enrollee is an existing customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CheckoutPaymentGiftCertificateViewModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "repDID does not match a rep (\"Invalid Rep Information was given.\"), or the rep is cancelled; customerDID does not match a customer (\"Invalid Customer Information was given.\"); onlineOrderID is not a valid integer"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "onlineOrderID is missing"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "The online order does not exist and neither repDID nor customerDID was supplied"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/payments/checkoutpaymentoption/validategiftcertificate/{giftcertificatedid}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Check a gift certificate code and return its purchased amount, the amount already used, and its remaining balance.",
+        "operationId": "v2_get_api_payments_checkoutpaymentoption_validategiftcertificate",
+        "parameters": [
+          {
+            "name": "giftcertificatedid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The gift certificate code to check."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — Returns 200 with an empty (null) body when the code is not found, is disabled, has expired, or was issued on an order that is not in an official status (for example, voided or unposted).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiftCertificateBalanceInquiryViewModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "giftCertificateDID is missing"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Read"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/payments/checkoutpaymentoption/applygcsandcredits/{onlineorderid}": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Apply gift certificates or account credits to a checkout order and return the amount actually applied for each one.",
+        "operationId": "v2_post_api_payments_checkoutpaymentoption_applygcsandcredits",
+        "parameters": [
+          {
+            "name": "onlineorderid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the online (cart) order being checked out."
+          },
+          {
+            "name": "localeID",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Locale ID used to translate credit account and currency names in the response."
+          },
+          {
+            "name": "gcsToApply",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of gift certificates to apply. Each entry is <giftCertificateDID>|<amount> with a period as the decimal separator, for example czAYTlL0bR2rqoYf|100.00,K3LzIfhBZoGPQEHv|25.00. This list replaces all gift certificates already applied to the order, so send the full list every time. To remove a certificate, leave it out, or send <giftCertificateDID>|0 if it is the only one. Unknown codes are ignored. A non-numeric amount causes an error."
+          },
+          {
+            "name": "creditsToApply",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated list of credits to apply. Each entry is <creditAccountID>|<amount> with a period as the decimal separator, for example 1|45.50,18|4.50. When gcsToApply is not supplied, this list replaces all credits already applied to the order, so send the full list every time. To remove a credit, leave it out, or send <creditAccountID>|0 if it is the only one. Each amount is capped at the shopper's available balance in that credit account. Unknown credit account IDs are ignored."
+          },
+          {
+            "name": "ccSourceTypeID",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Checkout source type. Pass 4 (Checkout 2.0) when paying through the Checkout 2.0 flow. Where the site enables it, the applied amounts are then kept for order completion."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success — No request body. Send gift certificates and credits in separate calls. When gcsToApply is supplied, the order's previously applied gift certificates are replaced. When only creditsToApply is supplied, the previously applied credits are replaced. When neither is supplied, previously applied gift certificates are cleared. The response has one entry for each supplied gift certificate that exists (AmountSpent can be 0) and one entry for each credit account with a positive applied amount. AmountSpent can be less than the amount requested: it is limited by the remaining balance, the items and charges the certificate or credit is eligible for, and the remaining order total.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CheckoutGetGcTotalsResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "onlineOrderID or localeID is not a valid integer"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "404": {
+            "description": "onlineOrderID or localeID is missing"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "The online order does not exist, or an entry in gcsToApply or creditsToApply is malformed (for example, a non-numeric amount or credit account ID)"
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
     "/api/v2/rep/{id}": {
       "put": {
         "tags": [
@@ -1437,7 +3756,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Rep DID"
           }
         ],
         "responses": {
@@ -1493,7 +3813,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Rep DID or Rep URL"
           },
           {
             "name": "returnCancelledOverride",
@@ -1980,6 +4301,117 @@
         ]
       }
     },
+    "/api/v2/shipping/orderdetailtrackingquantity": {
+      "post": {
+        "tags": [
+          "Shipping"
+        ],
+        "summary": "Record tracking numbers and shipped quantities against individual order line items, updating order status and optionally sending shipping-notification emails.",
+        "operationId": "v2_post_api_shipping_order_ordertracking_updateorderdetailtrackingquantity",
+        "responses": {
+          "202": {
+            "description": "Accepted — Success returns 202 Accepted with body {\"SUCCESS\": \"Imported successfully.\"}. Validation is all-or-nothing: if any line item fails validation, nothing is imported."
+          },
+          "400": {
+            "description": "Request body is missing or an empty array (body: {\"FAIL\": \"Request is empty.\"}); One or more line items failed validation and nothing was imported. The body is an object mapping each failing OrderDetailId to its message: 'The OrderDetailID is not valid.', 'The OrderDetailID was used before.' (line already shipped), or 'Multiple records with same OrderDetailID detected, this will have undesirable results.'; A body value is not in the expected format (body: list of field errors with Code, Name, Message)"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "An invalid or already-shipped OrderDetailId appears more than once in the same request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TrackingImportQuantityViewModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
+    "/api/v2/shipping/trackingimportar/{warehouseid}": {
+      "post": {
+        "tags": [
+          "Shipping"
+        ],
+        "summary": "Import tracking numbers for a batch of orders shipped from a warehouse, marking each order's lines from that warehouse as shipped and optionally sending shipping-notification emails.",
+        "operationId": "v2_post_api_shipping_order_ordertracking_trackingimportar",
+        "parameters": [
+          {
+            "name": "warehouseid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the warehouse that shipped the orders; only order lines fulfilled from this warehouse are updated."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted — Success returns 202 Accepted with body {\"SUCCESS\": \"Imported successfully.\"}. Validation is all-or-nothing: if any order fails validation, nothing is imported."
+          },
+          "400": {
+            "description": "Request body is missing or an empty array (body: {\"FAIL\": \"Request is empty.\"}); warehouseId does not match an existing warehouse; nothing is imported and the body is an empty object {}; One or more orders failed validation and nothing was imported. The body is an object mapping each failing OrderID to its message: 'Order not found', 'Order is not in a valid or updatable status. Order Status <status>', or 'Order line items/details do not have a valid/updatable status from this warehouse or not associated with any packslip process.'; A body value or warehouseId is not in the expected format (body: list of field errors with Code, Name, Message)"
+          },
+          "401": {
+            "description": "Missing, malformed, or expired Bearer token"
+          },
+          "403": {
+            "description": "Token lacks the required scope"
+          },
+          "429": {
+            "description": "Throttled — retry with exponential backoff"
+          },
+          "500": {
+            "description": "An order fails more than one validation check, or a failing OrderID appears more than once in the same request"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TrackingImportViewModel"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "oauth2": [
+              "api/Write"
+            ],
+            "apiKey": []
+          }
+        ]
+      }
+    },
     "/api/v2/customer/{id}": {
       "get": {
         "tags": [
@@ -1994,7 +4426,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Customer DID"
           }
         ],
         "responses": {
@@ -2294,7 +4727,7 @@
         "description": "OAuth 2.0 client credentials. Required on all v2 routes. The token endpoint is served on the same host as the API.",
         "flows": {
           "clientCredentials": {
-            "tokenUrl": "/oauth2/token",
+            "tokenUrl": "https://{client-domain}/oauth2/token",
             "scopes": {
               "api/Read": "Read access (GET routes)",
               "api/Write": "Write access (POST/PUT/PATCH/DELETE routes)"
@@ -2310,6 +4743,39 @@
       }
     },
     "schemas": {
+      "SeamlessAuthenticationViewModel": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "Access token for the signed-in rep or customer."
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh token that can be exchanged for a new access token."
+          },
+          "userName": {
+            "type": "string",
+            "description": "The signed-in user's ID number: the RepDID for a rep, or the CustomerDID for a customer."
+          },
+          "userType": {
+            "type": "string",
+            "enum": [
+              "rep",
+              "customer"
+            ],
+            "description": "Type of user the token was issued for."
+          },
+          "hasReciprocalID": {
+            "type": "boolean",
+            "description": "True when linked rep/customer (reciprocal) accounts are enabled and this user has a linked account of the other type."
+          },
+          "canEnrollAsRep": {
+            "type": "boolean",
+            "description": "For customers, true when the customer can still enroll as a rep (has not already been upgraded to a rep). Always false for reps."
+          }
+        }
+      },
       "InventoryDetailViewModel": {
         "type": "object",
         "properties": {
@@ -2713,6 +5179,360 @@
           },
           "ErrorMessage": {
             "type": "string"
+          }
+        }
+      },
+      "InventoryShoppingResponse": {
+        "description": "An array of products, or a single product when productID is supplied.",
+        "oneOf": [
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryShoppingDisplayViewModel"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/InventoryShoppingDisplayViewModel"
+          }
+        ]
+      },
+      "InventoryShoppingDisplayViewModel": {
+        "type": "object",
+        "description": "A product as displayed in the shopping cart, with pricing for the requested rep, customer or price type. Properties whose value is null are left out of the response.",
+        "properties": {
+          "InventoryID": {
+            "type": "integer",
+            "description": "Internal inventory ID."
+          },
+          "ProductID": {
+            "type": "string",
+            "description": "Product ID (item number)."
+          },
+          "MasterProductID": {
+            "type": "string"
+          },
+          "DisplayName": {
+            "type": "string",
+            "description": "Translated display name."
+          },
+          "ShortDetail": {
+            "type": "string",
+            "description": "Short description."
+          },
+          "LongDetail": {
+            "type": "string",
+            "description": "Long description."
+          },
+          "Price": {
+            "type": "number",
+            "description": "Price for the applicable price type."
+          },
+          "CurrencyTypeID": {
+            "type": "integer"
+          },
+          "CurrencySymbol": {
+            "type": "string"
+          },
+          "Volume": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume2": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume3": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume4": {
+            "type": "number",
+            "nullable": true
+          },
+          "Compare": {
+            "type": "number",
+            "description": "Comparison price."
+          },
+          "CompareText": {
+            "type": "string"
+          },
+          "SmallImageURL": {
+            "type": "string"
+          },
+          "LargeImageURL": {
+            "type": "string"
+          },
+          "IsFeaturedItem": {
+            "type": "boolean"
+          },
+          "CategoryID": {
+            "type": "integer"
+          },
+          "InventoryRelationshipGroupID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "OutOfStockMessage": {
+            "type": "string"
+          },
+          "LowStockMessage": {
+            "type": "string"
+          },
+          "DoNotAllowAddToCartStock": {
+            "type": "boolean",
+            "description": "True when the item can be shown but cannot be added to the cart because of low or out-of-stock rules."
+          },
+          "DoNotAllowAddToCartCountry": {
+            "type": "boolean",
+            "description": "True when the item can be shown but cannot be added to the cart for the shopping country."
+          },
+          "AllowBackOrder": {
+            "type": "boolean"
+          },
+          "GroupItemOverrideStock": {
+            "type": "boolean"
+          },
+          "SearchField": {
+            "type": "string",
+            "description": "Read-only. Upper-cased display name with punctuation and spaces removed."
+          },
+          "IsCartItem": {
+            "type": "boolean"
+          },
+          "SortOrder": {
+            "type": "integer"
+          },
+          "Level": {
+            "type": "integer"
+          },
+          "MasterInventoryProductID": {
+            "type": "string"
+          },
+          "MasterInventoryRelationshipGroupID": {
+            "type": "integer",
+            "nullable": true
+          },
+          "RenewalIncrement": {
+            "type": "integer",
+            "nullable": true
+          },
+          "QtyOptions": {
+            "type": "string"
+          },
+          "MasterItemDisplayName": {
+            "type": "string"
+          },
+          "AllowJSCartPurchase": {
+            "type": "boolean"
+          },
+          "DoNotAllowAddToCartFlagged": {
+            "type": "boolean",
+            "description": "True when the item can be shown but is flagged as not purchasable in the cart."
+          },
+          "TagText": {
+            "type": "string",
+            "description": "Text shown as a tag on the list image."
+          },
+          "TagImageUrl": {
+            "type": "string",
+            "description": "Image shown as a tag on the list image."
+          },
+          "Customization": {
+            "$ref": "#/components/schemas/InventoryShoppingDetailCustomization"
+          },
+          "AutoShipPrice": {
+            "type": "number",
+            "nullable": true,
+            "description": "AutoShip price shown in the shopping cart."
+          },
+          "WholesalePrice": {
+            "type": "number"
+          },
+          "IsEnrollment": {
+            "type": "boolean"
+          },
+          "PurchaseOption": {
+            "type": "integer",
+            "description": "AutoShip default option. In the product list: 0 = off, 1 = on for reps and customers, 2 = on for reps only, 3 = on for customers only. In a single product lookup it is resolved for the order type: 1 = AutoShip off by default, 2 = AutoShip on by default."
+          },
+          "SearchTerms": {
+            "type": "string",
+            "description": "Extra terms that can be matched when searching for items."
+          },
+          "IsAutoShipItem": {
+            "type": "boolean"
+          },
+          "Media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Media"
+            }
+          },
+          "HasAutoShipTemplate": {
+            "type": "boolean"
+          },
+          "SignupOptionalItem": {
+            "type": "boolean"
+          },
+          "SignupAutoshipOption": {
+            "type": "boolean"
+          },
+          "SignupOptionalItemQtyOptions": {
+            "type": "string"
+          },
+          "SignupAutoshipOptionQtyOptions": {
+            "type": "string"
+          },
+          "PricePerUnitStandardOfMeasurement": {
+            "type": "string"
+          },
+          "PricePerUnitQuantityPer": {
+            "type": "number",
+            "nullable": true
+          },
+          "IsPartyItem": {
+            "type": "boolean"
+          },
+          "SoftAllocationTimerOverride": {
+            "type": "integer"
+          },
+          "IsMasterKitItem": {
+            "type": "boolean"
+          }
+        }
+      },
+      "InventoryShoppingDetailCustomization": {
+        "type": "object",
+        "description": "Display customization for the product detail page. It is returned only on a single product lookup, and only when a customization is configured for the product.",
+        "properties": {
+          "ID": {
+            "type": "integer",
+            "description": "ID of the customization, for lookup purposes only."
+          },
+          "Description": {
+            "type": "string",
+            "description": "Description of the customization, for reference only."
+          },
+          "IsAddToCartDisabled": {
+            "type": "boolean",
+            "description": "Whether the add-to-cart button should be disabled."
+          },
+          "IsPreDescriptionVisible": {
+            "type": "boolean",
+            "description": "Whether the customization content should be shown in the pre-description area."
+          }
+        }
+      },
+      "InventoryReview": {
+        "type": "object",
+        "description": "A product review entered by a rep or customer and approved for display.",
+        "properties": {
+          "ID": {
+            "type": "integer"
+          },
+          "InventoryID": {
+            "type": "integer",
+            "description": "Internal inventory ID of the reviewed item."
+          },
+          "RepID": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Set when the review was written by a rep."
+          },
+          "CustomerID": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Set when the review was written by a customer."
+          },
+          "Description": {
+            "type": "string",
+            "description": "Title of the review."
+          },
+          "Explanation": {
+            "type": "string",
+            "description": "Review text."
+          },
+          "Rating": {
+            "type": "integer",
+            "description": "Star rating, from 1 up to the configured maximum (5 by default)."
+          },
+          "Status": {
+            "type": "integer",
+            "description": "Review status. This endpoint returns only approved reviews (2)."
+          },
+          "BackOfficeUserName": {
+            "type": "string",
+            "description": "User who created the review."
+          },
+          "SortOrder": {
+            "type": "integer",
+            "description": "Display order. It takes precedence over the default review sorting."
+          },
+          "CreatedBy": {
+            "type": "string"
+          },
+          "DateCreated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "LastModifiedBy": {
+            "type": "string"
+          },
+          "DateLastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "InventoryWarehouseViewModel": {
+        "type": "object",
+        "description": "Stock levels for one product in one warehouse.",
+        "properties": {
+          "InventoryWarehouseID": {
+            "type": "integer",
+            "nullable": true,
+            "description": "ID of this product and warehouse combination."
+          },
+          "ProductID": {
+            "type": "string",
+            "description": "Product ID (item number)."
+          },
+          "WarehouseID": {
+            "type": "integer"
+          },
+          "Cost": {
+            "type": "number",
+            "description": "Company cost of the item."
+          },
+          "OnHand": {
+            "type": "integer",
+            "description": "Quantity on hand."
+          },
+          "OnHandShipped": {
+            "type": "integer",
+            "description": "Quantity in the warehouse that is scheduled to ship."
+          },
+          "IdealOnHand": {
+            "type": "integer",
+            "description": "Ideal quantity to keep on hand."
+          },
+          "ReorderLevel": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Quantity at which the item should be reordered."
+          },
+          "SoftCount": {
+            "type": "integer",
+            "description": "Soft-allocated (temporarily reserved) quantity."
+          },
+          "SoftCountParty": {
+            "type": "integer",
+            "description": "Soft-allocated quantity for party orders."
+          },
+          "SoftCountNonParty": {
+            "type": "integer",
+            "description": "Soft-allocated quantity for non-party orders."
           }
         }
       },
@@ -3619,6 +6439,547 @@
           }
         }
       },
+      "OnlineOrderDetailViewModel": {
+        "type": "object",
+        "description": "A line item in an online order (shopping cart). Properties without a value are left out of the response.",
+        "properties": {
+          "OnlineOrderDetailId": {
+            "type": "integer",
+            "description": "Identifier of the online order line."
+          },
+          "ProductID": {
+            "type": "string",
+            "description": "Product ID of the item."
+          },
+          "InventoryID": {
+            "type": "integer",
+            "description": "Inventory identifier of the item."
+          },
+          "DisplayName": {
+            "type": "string",
+            "description": "Display name of the item."
+          },
+          "Price": {
+            "type": "number",
+            "description": "Price of the item."
+          },
+          "Tax": {
+            "type": "number",
+            "nullable": true
+          },
+          "Quantity": {
+            "type": "integer",
+            "description": "Quantity of the item."
+          },
+          "SmallImage": {
+            "type": "string",
+            "description": "URL of the item's thumbnail image."
+          },
+          "ParentProductID": {
+            "type": "string",
+            "description": "Product ID of the parent item, if one exists."
+          },
+          "ChildDisplayName": {
+            "type": "string",
+            "description": "Display name of the child item, if one exists."
+          },
+          "QtyOptions": {
+            "type": "string",
+            "description": "Quantity options available for this item."
+          },
+          "CurrencySymbol": {
+            "type": "string",
+            "description": "Currency symbol to show for the item."
+          },
+          "Misc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MiscFieldValue"
+            },
+            "description": "Misc field values for this line."
+          },
+          "AltText": {
+            "type": "string",
+            "description": "Alternate text for the item image. Defaults to the ProductID."
+          },
+          "SoftAllocationExpiration": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the stock reservation for this item expires. Omitted when the item is not reserved."
+          },
+          "AutoShipPrice": {
+            "type": "number",
+            "nullable": true,
+            "description": "AutoShip price of the item."
+          },
+          "IsAutoShipItem": {
+            "type": "boolean",
+            "description": "Whether the item can be added for AutoShip."
+          },
+          "IsAutoShip": {
+            "type": "boolean",
+            "description": "Whether the item has been marked for AutoShip."
+          },
+          "Volume": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume2": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume3": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume4": {
+            "type": "number",
+            "nullable": true
+          },
+          "VolumeT": {
+            "type": "number",
+            "nullable": true
+          },
+          "VolumeT2": {
+            "type": "number",
+            "nullable": true
+          },
+          "VolumeT3": {
+            "type": "number",
+            "nullable": true
+          },
+          "VolumeT4": {
+            "type": "number",
+            "nullable": true
+          },
+          "WholesalePrice": {
+            "type": "number",
+            "nullable": true
+          },
+          "DateNextRun": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "SavedPrice": {
+            "type": "number",
+            "nullable": true
+          },
+          "IsResourceServerImage": {
+            "type": "boolean"
+          },
+          "GroupOwnerOnlineOrderDetailID": {
+            "type": "integer",
+            "description": "For kit child rows, the OnlineOrderDetailId of the kit's parent row. 0 for top-level rows."
+          },
+          "IsKitChildItem": {
+            "type": "boolean",
+            "description": "True when this item is a child of a configured kit. Its quantity cannot be changed and it cannot be removed on its own."
+          },
+          "IsKitParentItem": {
+            "type": "boolean",
+            "description": "True when this item is the parent of one or more kit child rows. Kits always have quantity 1."
+          }
+        }
+      },
+      "MiscFieldValue": {
+        "type": "object",
+        "properties": {
+          "Name": {
+            "type": "string",
+            "description": "Misc field name."
+          },
+          "Value": {
+            "nullable": true,
+            "description": "Value stored for this line. Its type depends on how the misc field is configured, and it may be null."
+          }
+        }
+      },
+      "OnlineOrderDetailCreateRequest": {
+        "description": "Body for adding an item to an online order. For a plain add (productId in the query string), send an array of misc field values, or no body at all. Otherwise leave productId out of the query string and send the with-overrides payload instead.",
+        "oneOf": [
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MiscFieldViewModel"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/NewOnlineOrderDetailWithOverridesViewModel"
+          }
+        ]
+      },
+      "NewOnlineOrderDetailWithOverridesViewModel": {
+        "type": "object",
+        "description": "Payload for adding a product with its quantity and misc fields in the body. OverriddenFields is accepted but not currently applied when adding through this route: the product is added at its standard price, tax and volume values. This variant always recalculates tax.",
+        "required": [
+          "ProductID"
+        ],
+        "properties": {
+          "Quantity": {
+            "type": "integer",
+            "default": 1,
+            "description": "Quantity of the product to add. Defaults to 1. Fewer units may be added if stock is limited."
+          },
+          "ProductID": {
+            "type": "string",
+            "description": "The product to add."
+          },
+          "OverriddenFields": {
+            "$ref": "#/components/schemas/OnlineOrderDetailOverriddenFields"
+          },
+          "Misc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MiscFieldViewModel"
+            },
+            "description": "Misc field values to store on the new line."
+          },
+          "ForceSeparate": {
+            "type": "boolean",
+            "default": true,
+            "description": "Create a separate line even if the product is already in the cart. Defaults to true when omitted."
+          }
+        }
+      },
+      "OnlineOrderDetailOverriddenFields": {
+        "type": "object",
+        "description": "Values that replace the line's calculated values. When this object is sent, Price, Volume through Volume4 and OtherPrice through OtherPrice4 are all written, and any of them left out is set to 0. SavedPrice changes only when supplied. TaxableAmount is applied when supplied, or set to 0 when tax is not being recalculated. Tax is applied only when tax is not being recalculated, and defaults to 0.",
+        "properties": {
+          "Price": {
+            "type": "number",
+            "nullable": true
+          },
+          "SavedPrice": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume2": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume3": {
+            "type": "number",
+            "nullable": true
+          },
+          "Volume4": {
+            "type": "number",
+            "nullable": true
+          },
+          "OtherPrice": {
+            "type": "number",
+            "nullable": true
+          },
+          "OtherPrice2": {
+            "type": "number",
+            "nullable": true
+          },
+          "OtherPrice3": {
+            "type": "number",
+            "nullable": true
+          },
+          "OtherPrice4": {
+            "type": "number",
+            "nullable": true
+          },
+          "TaxableAmount": {
+            "type": "number",
+            "nullable": true
+          },
+          "Tax": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "OnlineOrderDetailCreateResult": {
+        "type": "object",
+        "description": "Summary of the online order line that was created or added to. Properties without a value are left out.",
+        "properties": {
+          "OnlineOrderDetailID": {
+            "type": "integer",
+            "description": "Identifier of the online order line."
+          },
+          "ProductID": {
+            "type": "string",
+            "description": "The product that was added."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity now on the line."
+          },
+          "price": {
+            "type": "number",
+            "description": "Price of the line item."
+          },
+          "tax": {
+            "type": "number",
+            "nullable": true,
+            "description": "Tax on the line item."
+          },
+          "IsQuantityReduced": {
+            "type": "boolean",
+            "description": "Meant to flag that fewer units were added than requested because stock is limited. It compares the requested quantity with the product's total reserved quantity on the online order, so it is also true when the product was already in the cart. Check quantity to confirm."
+          },
+          "SoftAllocationExpiration": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the stock reservation for this item expires. Omitted when the item is not reserved."
+          }
+        }
+      },
+      "OnlineOrderDetailWithOverridesViewModel": {
+        "type": "object",
+        "description": "Optional body for the overrides variant of the line update. It is used only when quantity is not in the query string.",
+        "properties": {
+          "Quantity": {
+            "type": "integer",
+            "default": 1,
+            "description": "New quantity for the line. 0 removes it. Defaults to 1 when omitted."
+          },
+          "ProductID": {
+            "type": "string",
+            "description": "Not used by this operation. The line is identified by onlineOrderDetailId."
+          },
+          "OverriddenFields": {
+            "$ref": "#/components/schemas/OnlineOrderDetailOverriddenFields"
+          }
+        }
+      },
+      "UpdateAddressViewModel": {
+        "type": "object",
+        "description": "Send at least one of BillingAddress or ShippingAddress. A supplied address replaces every address field of that type on the order, and fields left out are cleared. Only the name fields, Company, Street1, Street2, City, State, PostalCode, County, Country, Phone and Email are used. Billing: when Company is supplied it becomes the bill-to name; otherwise FirstName and LastName are used. Shipping: when FirstName is supplied it becomes the full ship-to name and LastName is not used; otherwise Company is used if supplied, and if not, only LastName is kept.",
+        "properties": {
+          "BillingAddress": {
+            "$ref": "#/components/schemas/AddressViewModelAddress"
+          },
+          "ShippingAddress": {
+            "$ref": "#/components/schemas/AddressViewModelAddress"
+          },
+          "ShipGeoCode": {
+            "type": "string",
+            "description": "Ship-to tax geo code. This is normally determined automatically, so send it only to override it. Left unchanged when omitted."
+          }
+        }
+      },
+      "SuggestedPromotionViewModel": {
+        "type": "object",
+        "description": "A product and quantity the shopper selected for a suggested promotion.",
+        "properties": {
+          "ProductId": {
+            "type": "string",
+            "description": "Product selected for the promotion."
+          },
+          "Quantity": {
+            "type": "integer",
+            "description": "Quantity of that product."
+          }
+        }
+      },
+      "ApplySuggestedPromotionResponse": {
+        "type": "string",
+        "description": "Confirmation message returned with 201 Created.",
+        "example": "Promotion Successfully Applied"
+      },
+      "NewOnlineOrderDetailViewModel": {
+        "type": "object",
+        "description": "A product to add to a shopping cart.",
+        "properties": {
+          "ProductID": {
+            "type": "string",
+            "description": "Product ID of the item."
+          },
+          "SourceProgrammingKey": {
+            "type": "string",
+            "description": "Programming key of the third party that added the item."
+          },
+          "Quantity": {
+            "type": "integer",
+            "description": "Quantity to add."
+          },
+          "Price": {
+            "type": "number",
+            "description": "Not used when adding items; prices are determined by the server."
+          },
+          "IsAutoShip": {
+            "type": "boolean",
+            "description": "Also add the product to the cart's autoship (honored when creating a cart)."
+          },
+          "Misc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MiscFieldViewModel"
+            },
+            "description": "Custom (personalization) field values for the item."
+          },
+          "OnlineOrderDetailId": {
+            "type": "string",
+            "description": "Cart line this item recreates, used to carry over personalization; non-numeric placeholder IDs are accepted and ignored."
+          }
+        }
+      },
+      "OnlineOrderViewModel": {
+        "type": "object",
+        "description": "A shopping cart (online order) and its items.",
+        "properties": {
+          "ID": {
+            "type": "integer",
+            "description": "Shopping cart (online order) ID; use it for later cart and checkout calls."
+          },
+          "Total": {
+            "type": "number",
+            "nullable": true,
+            "description": "Cart total including tax, shipping, and handling."
+          },
+          "TotalProductPrice": {
+            "type": "number",
+            "nullable": true,
+            "description": "Item subtotal (no tax, shipping, or handling); items marked for autoship are priced at their autoship price."
+          },
+          "Country": {
+            "type": "string",
+            "description": "Shipping country of the cart."
+          },
+          "Party": {
+            "$ref": "#/components/schemas/PartyInfoViewModel"
+          },
+          "Items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OnlineOrderDetailViewModel"
+            },
+            "description": "Items in the cart."
+          },
+          "OnBehalfRepID": {
+            "type": "integer",
+            "nullable": true,
+            "description": "RepID of the rep the cart is being placed on behalf of."
+          },
+          "OnBehalfRepDID": {
+            "type": "string",
+            "description": "RepDID of the rep the cart is being placed on behalf of."
+          },
+          "OnBehalfRepDisplayName": {
+            "type": "string",
+            "description": "Display name of the rep the cart is being placed on behalf of."
+          },
+          "UnresolvedProductIDs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ProductIDs from the request that could not be found or priced and were skipped; only populated by the enrollment cart endpoints."
+          }
+        }
+      },
+      "PartyInfoViewModel": {
+        "type": "object",
+        "description": "Publicly available information about the party the cart is associated with. The response also includes a DistributionTypeOptions object describing the party type's shipping options.",
+        "properties": {
+          "ID": {
+            "type": "integer",
+            "description": "Party ID."
+          },
+          "PartyGUID": {
+            "type": "string",
+            "description": "Party's unique identifier."
+          },
+          "HostCustomerName": {
+            "type": "string",
+            "description": "Name of the customer hosting the party; only shown when the party type displays the host's name."
+          },
+          "RepDID": {
+            "type": "string",
+            "description": "RepDID of the rep managing the party."
+          },
+          "RepDisplayName": {
+            "type": "string",
+            "description": "Name of the rep managing the party; empty when the party type hides the rep name."
+          },
+          "PartyDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date of the party; null when the party type does not display the date."
+          },
+          "PartyInfo": {
+            "type": "string",
+            "description": "Party information entered by the host or managing rep; empty when the party type does not display it."
+          },
+          "IsClosed": {
+            "type": "boolean",
+            "description": "Whether the party has been closed."
+          },
+          "IsVoided": {
+            "type": "boolean",
+            "description": "Whether the party has been voided."
+          },
+          "IsPartyPersisted": {
+            "type": "boolean",
+            "description": "Whether the party stays associated with the customer's later orders, rather than being removed after the first party order or when the customer logs out."
+          },
+          "ProjectedAutoCloseDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date the party will be closed automatically, when automatic closing is enabled."
+          }
+        }
+      },
+      "OnlineOrderTotalsViewModel": {
+        "type": "object",
+        "description": "Current totals for a shopping cart.",
+        "properties": {
+          "Total": {
+            "type": "number",
+            "description": "Order total less any credit already applied to the order and the supplied gift certificate and credit amounts."
+          },
+          "ShippingTotal": {
+            "type": "number",
+            "description": "Shipping charge plus handling fee (plus shipping tax when VAT applies)."
+          },
+          "HandlingFee": {
+            "type": "number",
+            "description": "Handling fee (plus handling tax when VAT applies)."
+          }
+        }
+      },
+      "UpdateShipMethodViewModel": {
+        "type": "object",
+        "description": "Shopping cart totals after a shipping method change.",
+        "properties": {
+          "ShippingTotal": {
+            "type": "number",
+            "description": "Shipping charge for the new shipping method."
+          },
+          "TaxTotal": {
+            "type": "number",
+            "description": "Tax total after the change."
+          },
+          "HandlingFee": {
+            "type": "number",
+            "description": "Handling fee for the new shipping method."
+          },
+          "OrderTotal": {
+            "type": "number",
+            "description": "Order total after the change."
+          },
+          "CreditUsed": {
+            "type": "number",
+            "description": "Credit applied to the order, if any."
+          },
+          "BalanceDue": {
+            "type": "number",
+            "description": "Balance due after the change."
+          }
+        }
+      },
       "CreditCardPaymentViewModel": {
         "type": "object",
         "required": [
@@ -3944,6 +7305,252 @@
           }
         }
       },
+      "PaymentOptionViewModel": {
+        "type": "object",
+        "properties": {
+          "PaymentTypeID": {
+            "type": "integer",
+            "enum": [
+              6,
+              20
+            ],
+            "description": "Payment method type. 6 = Check, 20 = Credit card"
+          },
+          "CCAccountID": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Credit card entries only: the ID of the card account to pay with. Omitted for other payment types."
+          },
+          "Description": {
+            "type": "string",
+            "description": "Display name. For credit card entries this is the card account name; otherwise it is the localized payment type name."
+          },
+          "ImagePath": {
+            "type": "string",
+            "description": "Credit card entries only: URL of the card account's logo image."
+          },
+          "IsAgnosticRedirect": {
+            "type": "boolean",
+            "description": "Credit card entries only: true when the card is entered on a hosted payment page reached by a full-page redirect, false when it is entered in an embedded payment frame."
+          },
+          "ProcessorID": {
+            "type": "boolean",
+            "description": "Reserved and not populated; always false."
+          }
+        }
+      },
+      "CheckoutPaymentCreditViewModel": {
+        "type": "object",
+        "properties": {
+          "CreditAccountID": {
+            "type": "integer",
+            "description": "Credit account ID. Use this value in creditsToApply."
+          },
+          "CreditAccountName": {
+            "type": "string",
+            "description": "Localized display name of the credit account."
+          },
+          "CreditAccountDescription": {
+            "type": "string",
+            "description": "The available balance, formatted for display with currency formatting."
+          },
+          "Amount": {
+            "type": "number",
+            "description": "Available balance. Converted to the order's currency when the account allows currency conversion."
+          },
+          "CurrencyTypeID": {
+            "type": "integer",
+            "description": "Currency of Amount."
+          },
+          "CurrencyTypeName": {
+            "type": "string",
+            "description": "Currency name."
+          },
+          "Abbreviation": {
+            "type": "string",
+            "description": "Currency abbreviation."
+          },
+          "CurrencySymbol": {
+            "type": "string",
+            "description": "Currency symbol."
+          },
+          "DisplayPrefix": {
+            "type": "string",
+            "description": "Text to display before amounts in this currency."
+          },
+          "DisplaySuffix": {
+            "type": "string",
+            "description": "Text to display after amounts in this currency."
+          },
+          "RedemptionLimitationMessage": {
+            "type": "string",
+            "description": "Message describing any restriction on what this credit can be applied to."
+          },
+          "Selected": {
+            "type": "boolean",
+            "description": "Client-side selection state; always false in this response."
+          },
+          "Applied": {
+            "type": "boolean",
+            "description": "Client-side applied state; always false in this response."
+          },
+          "DateExpires": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date the soonest-expiring part of the balance expires. Omitted when nothing expires or when expiration display is turned off."
+          },
+          "AmountExpiring": {
+            "type": "number",
+            "description": "Amount that expires on DateExpires; 0 when not applicable."
+          }
+        }
+      },
+      "CheckoutPaymentGiftCertificateViewModel": {
+        "type": "object",
+        "properties": {
+          "ID": {
+            "type": "integer",
+            "description": "Gift certificate ID."
+          },
+          "GiftCertificateTypeID": {
+            "type": "integer",
+            "description": "Gift certificate type ID."
+          },
+          "CertificateDID": {
+            "type": "string",
+            "description": "Gift certificate code. Use this value in gcsToApply."
+          },
+          "Amount": {
+            "type": "number",
+            "description": "Remaining balance."
+          },
+          "TotalOnCard": {
+            "type": "number",
+            "description": "Not populated by this endpoint (0)."
+          },
+          "OriginalAmount": {
+            "type": "number",
+            "description": "Not populated by this endpoint (0)."
+          },
+          "Description": {
+            "type": "string",
+            "description": "Gift certificate type description."
+          },
+          "ExpirationDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Expiration date."
+          },
+          "ShouldDisplayGiftCertificateID": {
+            "type": "boolean",
+            "description": "Display hint: show the certificate code. Can be true only for certificate types that only the owner can redeem."
+          },
+          "ShouldDisplayCurrencySymbol": {
+            "type": "boolean",
+            "description": "Display hint: show the currency symbol. Can be true only for certificate types that only the owner can redeem."
+          },
+          "ShouldDisplayExpirationDate": {
+            "type": "boolean",
+            "description": "Display hint: show the expiration date. Can be true only for certificate types that only the owner can redeem."
+          },
+          "ShouldDisplayExpiredGiftCertificates": {
+            "type": "boolean",
+            "description": "Display hint: show expired certificates. Can be true only for certificate types that only the owner can redeem."
+          },
+          "IsAvailableOnEnrollment": {
+            "type": "boolean",
+            "description": "Whether the certificate type can be used on enrollment orders. Populated only for rep-owned certificates; false for customer-owned certificates."
+          },
+          "IsUnavailable": {
+            "type": "boolean",
+            "description": "True when the certificate cannot be used for one or more items currently in the cart."
+          },
+          "Applied": {
+            "type": "boolean",
+            "description": "Client-side applied state; always false in this response."
+          },
+          "Selected": {
+            "type": "boolean",
+            "description": "Client-side selection state; always false in this response."
+          },
+          "SelectedAmount": {
+            "type": "number",
+            "description": "Client-side selected amount; always 0 in this response."
+          }
+        }
+      },
+      "GiftCertificateBalanceInquiryViewModel": {
+        "type": "object",
+        "properties": {
+          "PurchasedAmount": {
+            "type": "number",
+            "description": "Original value of the gift certificate."
+          },
+          "UsedAmount": {
+            "type": "number",
+            "description": "Amount already redeemed."
+          },
+          "Balance": {
+            "type": "number",
+            "description": "Remaining balance."
+          },
+          "CertificateDID": {
+            "type": "string",
+            "description": "Gift certificate code."
+          },
+          "CertificateDisabled": {
+            "type": "boolean",
+            "description": "Whether the certificate is disabled. Disabled certificates return no result, so this is normally false."
+          }
+        }
+      },
+      "CheckoutGetGcTotalsResponse": {
+        "type": "object",
+        "properties": {
+          "GiftCertificateDID": {
+            "type": "string",
+            "description": "Gift certificate code for gift certificate entries. Omitted for credit entries."
+          },
+          "CreditAccountID": {
+            "type": "integer",
+            "description": "Credit account ID for credit entries; 0 for gift certificate entries."
+          },
+          "AmountSpent": {
+            "type": "number",
+            "description": "Amount actually applied to the order."
+          },
+          "CreditAccountDescription": {
+            "type": "string",
+            "description": "Credit entries only: the applied amount formatted for display with currency. Omitted for gift certificate entries."
+          },
+          "CurrencyTypeID": {
+            "type": "integer",
+            "description": "Currency of the applied credit; 0 for gift certificate entries."
+          },
+          "CurrencyTypeDescription": {
+            "type": "string",
+            "description": "Localized currency name for credit entries. Omitted for gift certificate entries."
+          },
+          "CurrencySymbol": {
+            "type": "string",
+            "description": "Currency symbol; empty for gift certificate entries."
+          },
+          "DisplayPrefix": {
+            "type": "string",
+            "description": "Text to display before amounts in this currency; empty for gift certificate entries."
+          },
+          "DisplaySuffix": {
+            "type": "string",
+            "description": "Text to display after amounts in this currency; empty for gift certificate entries."
+          },
+          "RedemptionLimitationMesage": {
+            "type": "string",
+            "nullable": true,
+            "description": "The property name is misspelled in the API. Not currently populated, so it is normally absent from responses."
+          }
+        }
+      },
       "RepsViewModel": {
         "type": "object",
         "properties": {
@@ -4219,6 +7826,26 @@
           }
         }
       },
+      "Media": {
+        "type": "object",
+        "properties": {
+          "Url": {
+            "type": "string"
+          },
+          "AltText": {
+            "type": "string"
+          },
+          "TitleText": {
+            "type": "string"
+          },
+          "IsVideo": {
+            "type": "boolean"
+          },
+          "ThumbnailUrl": {
+            "type": "string"
+          }
+        }
+      },
       "SeamlessAuthenticationToken": {
         "type": "object",
         "properties": {
@@ -4227,6 +7854,66 @@
           },
           "IPAddress": {
             "type": "string"
+          }
+        }
+      },
+      "TrackingImportQuantityViewModel": {
+        "type": "object",
+        "properties": {
+          "OrderDetailId": {
+            "type": "integer",
+            "description": "ID of the order line item (order detail) the shipment is recorded against."
+          },
+          "TrackingId": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Carrier tracking number."
+          },
+          "Quantity": {
+            "type": "integer",
+            "description": "Quantity shipped under this tracking number. Must be greater than 0 for the shipment to be recorded. If it equals the line quantity, the whole line is marked shipped; if it is less, only that quantity is marked shipped."
+          },
+          "SendAR": {
+            "type": "boolean",
+            "description": "When true, sends the shipping-notification email for the line's order."
+          },
+          "ShipmethodID": {
+            "type": "integer",
+            "description": "Optional ship method ID to record with the tracking number. If omitted (0) or not recognized, ThirdPartyShippingCode is used, then the line's own ship method."
+          },
+          "ThirdPartyShippingCode": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Optional third-party/carrier shipping code that identifies the ship method when ShipmethodID is not supplied."
+          }
+        }
+      },
+      "TrackingImportViewModel": {
+        "type": "object",
+        "properties": {
+          "OrderID": {
+            "type": "integer",
+            "description": "ByDesign order ID. Every line on the order that ships from the given warehouse and has a pack slip is marked shipped with this tracking number."
+          },
+          "TrackingID": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Carrier tracking number."
+          },
+          "ShippingCode": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "Optional carrier/third-party shipping code identifying the ship method used. If omitted or not recognized, the order line's ship method is recorded."
+          },
+          "ShipDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Date the order shipped. Defaults to the current date and time when omitted."
+          },
+          "SendAR": {
+            "type": "boolean",
+            "description": "When true (and TrackingID is supplied), sends the shipping-notification email for this order."
           }
         }
       },
