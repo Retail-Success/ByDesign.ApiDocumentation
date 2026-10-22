@@ -1,18 +1,30 @@
-auth {
-  mode: bearer
-}
-
-auth:bearer {
-  token: {{accessToken}}
-}
-
 headers {
   x-api-key: {{apiKey}}
 }
 
+auth {
+  mode: oauth2
+}
+
+auth:oauth2 {
+  grant_type: client_credentials
+  access_token_url: {{tokenUrl}}
+  refresh_token_url: 
+  client_id: {{clientId}}
+  client_secret: {{clientSecret}}
+  scope: api/Read api/Write
+  credentials_placement: basic_auth_header
+  credentials_id: credentials
+  token_source: access_token
+  token_placement: header
+  token_header_prefix: Bearer
+  auto_fetch_token: true
+  auto_refresh_token: false
+}
+
 docs {
   # ByDesign API v2
-
+  
   1. Select the **ByDesign** environment and set `baseUrl` to your API URL from the
      ByDesign back office. Enter `clientId`, `clientSecret` and `apiKey` as secret values.
   2. Run **Get Access Token**. Its post-response script stores the token in the
