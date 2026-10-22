@@ -1,0 +1,25 @@
+meta {
+  name: Validate Gift Certificate
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/v2/payments/checkoutpaymentoption/validategiftcertificate/:giftcertificatedid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  giftcertificatedid: 
+}
+
+docs {
+  `GET /api/v2/payments/checkoutpaymentoption/validategiftcertificate/{giftcertificatedid}`
+
+  Check a gift certificate code and return its purchased amount, the amount already used, and its remaining balance.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

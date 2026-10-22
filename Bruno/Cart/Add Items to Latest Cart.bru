@@ -1,0 +1,54 @@
+meta {
+  name: Add Items to Latest Cart
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v2/onlineorder/additemstolatest
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~repDID: 
+  ~customerDID: 
+  ~country: 
+  ~shouldCalculateTax: 
+  ~languageKey: 
+  ~localeID: 
+  ~cartConfigurationID: 
+  ~onlineOrderID: 
+  ~onBehalfRepGUID: 
+  ~partyGuid: 
+  ~claimRewards: 
+}
+
+body:json {
+  [
+    {
+      "ProductID": "",
+      "SourceProgrammingKey": "",
+      "Quantity": 0,
+      "Price": 0,
+      "IsAutoShip": false,
+      "Misc": [
+        {
+          "Name": "",
+          "Value": ""
+        }
+      ],
+      "OnlineOrderDetailId": ""
+    }
+  ]
+}
+
+docs {
+  `POST /api/v2/onlineorder/additemstolatest`
+
+  Get the shopper's most recent incomplete shopping cart (creating one if needed) and add the supplied products to it.
+
+  Required scope: `api/Write`
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

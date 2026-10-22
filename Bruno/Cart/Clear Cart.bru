@@ -1,0 +1,25 @@
+meta {
+  name: Clear Cart
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v2/onlineorder/clear/:onlineorderid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  onlineorderid: 
+}
+
+docs {
+  `POST /api/v2/onlineorder/clear/{onlineorderid}`
+
+  Remove all items from a shopping cart so the shopper can start over.
+
+  Required scope: `api/Write`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

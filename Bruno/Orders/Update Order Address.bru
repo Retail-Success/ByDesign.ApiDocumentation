@@ -1,0 +1,79 @@
+meta {
+  name: Update Order Address
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/v2/order/:orderid/address
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~shouldCalculateTax: 
+}
+
+params:path {
+  orderid: 
+}
+
+body:json {
+  {
+    "BillingAddress": {
+      "ID": 0,
+      "Description": "",
+      "Street1": "",
+      "Street2": "",
+      "City": "",
+      "Company": "",
+      "State": "",
+      "PostalCode": "",
+      "County": "",
+      "Country": "",
+      "Phone": "",
+      "Email": "",
+      "FirstName": "",
+      "LastName": "",
+      "SpecialInstructions": "",
+      "SuggestedAddress": false,
+      "IsHiddenOnCart": false,
+      "IsOverrideAddress": false,
+      "IsDefaultProfile": 0
+    },
+    "ShippingAddress": {
+      "ID": 0,
+      "Description": "",
+      "Street1": "",
+      "Street2": "",
+      "City": "",
+      "Company": "",
+      "State": "",
+      "PostalCode": "",
+      "County": "",
+      "Country": "",
+      "Phone": "",
+      "Email": "",
+      "FirstName": "",
+      "LastName": "",
+      "SpecialInstructions": "",
+      "SuggestedAddress": false,
+      "IsHiddenOnCart": false,
+      "IsOverrideAddress": false,
+      "IsDefaultProfile": 0
+    },
+    "ShipGeoCode": ""
+  }
+}
+
+docs {
+  `PUT /api/v2/order/{orderid}/address`
+
+  Update the billing and/or shipping address of an order and, by default, recalculate its taxes.
+
+  Required scope: `api/Write`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

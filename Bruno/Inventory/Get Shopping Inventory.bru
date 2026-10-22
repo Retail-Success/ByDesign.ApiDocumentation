@@ -1,0 +1,45 @@
+meta {
+  name: Get Shopping Inventory
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/shopping
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~productID: 
+  ~repDID: 
+  ~customerDID: 
+  ~langKey: 
+  ~localeID: 
+  ~country: 
+  ~orderType: 
+  ~rankPriceTypeID: 
+  ~rankPriceTypeID_autoShip: 
+  ~cartConfigurationId: 
+  ~partyID: 
+  ~categoryId: 
+  ~includeChildItems: 
+  ~selectedFilterOptions: 
+  ~loadSecondaryCategory: 
+  ~searchTerm: 
+  ~top: 
+  ~excludedItems: 
+  ~onlyRenewalItems: 
+  ~getParent: 
+  ~forceProduct: 
+}
+
+docs {
+  `GET /api/v2/inventory/shopping`
+
+  Return the shopping catalog products, with pricing, stock messages and images, that a rep or customer can buy, or a single product when productID is supplied; OData query options ($filter, $top, $orderby, $select) are supported.
+
+  Required scope: `api/Read`
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

@@ -1,0 +1,32 @@
+meta {
+  name: Update Order Line Tracking
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v2/shipping/orderdetailtrackingquantity
+  body: json
+  auth: inherit
+}
+
+body:json {
+  [
+    {
+      "OrderDetailId": 0,
+      "TrackingId": "",
+      "Quantity": 0,
+      "SendAR": false,
+      "ShipmethodID": 0,
+      "ThirdPartyShippingCode": ""
+    }
+  ]
+}
+
+docs {
+  `POST /api/v2/shipping/orderdetailtrackingquantity`
+
+  Record tracking numbers and shipped quantities against individual order line items, updating order status and optionally sending shipping-notification emails.
+
+  Required scope: `api/Write`
+}

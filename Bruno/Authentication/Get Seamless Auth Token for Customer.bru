@@ -1,0 +1,25 @@
+meta {
+  name: Get Seamless Auth Token for Customer
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v2/authentication/seamless/forcustomer/:customerdid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  customerdid: 
+}
+
+docs {
+  `GET /api/v2/authentication/seamless/forcustomer/{customerdid}`
+
+  Get a seamless authentication token for a customer, for sign-in to other Freedom Suite applications.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

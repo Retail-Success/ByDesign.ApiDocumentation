@@ -1,0 +1,42 @@
+meta {
+  name: Add Cart Item
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v2/onlineorderdetail
+  body: json
+  auth: inherit
+}
+
+params:query {
+  onlineOrderId: 
+  ~productId: 
+  ~quantity: 
+  ~shouldCalculateTax: 
+  ~forceSeparate: 
+  ~relationshipGroupID: 
+  ~sourceProgrammingKey: 
+}
+
+body:json {
+  [
+    {
+      "Name": "",
+      "Value": ""
+    }
+  ]
+}
+
+docs {
+  `POST /api/v2/onlineorderdetail`
+
+  Add a product to an online order: send productId (and optionally quantity) in the query string with an optional array of misc fields as the body, or leave productId out and send the with-overrides payload, which carries ProductID, Quantity and Misc in the body (its overridden values are not currently applied on this route).
+
+  Required scope: `api/Write`
+
+  Fill in the required query parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}
