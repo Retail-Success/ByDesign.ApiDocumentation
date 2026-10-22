@@ -1,0 +1,37 @@
+meta {
+  name: Import Warehouse Tracking
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v2/shipping/trackingimportar/:warehouseid
+  body: json
+  auth: inherit
+}
+
+params:path {
+  warehouseid: 
+}
+
+body:json {
+  [
+    {
+      "OrderID": 0,
+      "TrackingID": "",
+      "ShippingCode": "",
+      "ShipDate": "2026-01-01T00:00:00Z",
+      "SendAR": false
+    }
+  ]
+}
+
+docs {
+  `POST /api/v2/shipping/trackingimportar/{warehouseid}`
+
+  Import tracking numbers for a batch of orders shipped from a warehouse, marking each order's lines from that warehouse as shipped and optionally sending shipping-notification emails.
+
+  Required scope: `api/Write`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Get Cart Totals
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/v2/onlineorder/totals/:onlineorderid
+  body: none
+  auth: inherit
+}
+
+params:query {
+  giftCertificatesApplied: 
+  creditsApplied: 
+}
+
+params:path {
+  onlineorderid: 
+}
+
+docs {
+  `GET /api/v2/onlineorder/totals/{onlineorderid}`
+
+  Get a shopping cart's current total, shipping total, and handling fee after applying gift certificate and credit amounts.
+
+  Required scope: `api/Read`
+
+  Fill in the path and required query parameters on the **Params** tab before sending.
+}

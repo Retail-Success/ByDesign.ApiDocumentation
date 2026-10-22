@@ -1,0 +1,38 @@
+meta {
+  name: Update Cart Ship Method with Overrides
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/v2/onlineorder/:onlineorderid/shipmethodwithoverrides
+  body: none
+  auth: inherit
+}
+
+params:query {
+  shipMethodID: 
+  ~ShippingTotal: 
+  ~ShippingTax: 
+  ~ShippingTaxCodeID: 
+  ~HandlingFee: 
+  ~HandlingTax: 
+  ~HandlingTaxCodeID: 
+  ~shouldCalculateTax: 
+}
+
+params:path {
+  onlineorderid: 
+}
+
+docs {
+  `POST /api/v2/onlineorder/{onlineorderid}/shipmethodwithoverrides`
+
+  Change a shopping cart's shipping method with optional shipping, handling, and tax override amounts, and return the recalculated totals.
+
+  Required scope: `api/Write`
+
+  Fill in the path and required query parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

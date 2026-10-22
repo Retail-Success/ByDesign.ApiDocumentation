@@ -242,6 +242,10 @@ All routes below are relative to your API URL. `GET` routes need the `api/Read` 
 | `GET` | `/api/v2/inventory/categorydetail/{categoryid}` | Get a specific inventory category by ID. |
 | `GET` | `/api/v2/inventory/media/{productid}` | Return the media (images and video) for an inventory item. |
 | `GET` | `/api/v2/inventory/price/{productid}/{rankpricetypeid}` | Get the price and rank-price values for an inventory item. |
+| `GET` | `/api/v2/inventory/shopping` | List the catalog products a rep or customer can buy, with pricing, stock messages and images, or get one product by `productID`. Supports OData query options. |
+| `GET` | `/api/v2/inventory/review/{productid}` | List the approved reviews for a product. |
+| `GET` | `/api/v2/inventory/warehouse/{productid}` | List a product's stock levels in each warehouse. |
+| `GET` | `/api/v2/inventory/collection/{inventorycollectionid}` | List the products in an inventory collection that can be bought on a back-office order, priced for a rep or customer. Supports OData query options. |
 
 ### Orders
 
@@ -259,6 +263,24 @@ All routes below are relative to your API URL. `GET` routes need the `api/Read` 
 | `POST` | `/api/v2/order/{orderid}/post` | Post (make official) an unofficial order. |
 | `GET` | `/api/v2/order/ordersforinvoicenumber/{invoicenumber}` | Get orders matching an invoice number. |
 | `POST` | `/api/v2/order/retailreceipt` | Post new retail receipts. `OrderDate` must be UTC. |
+| `PUT` | `/api/v2/order/{orderid}/address` | Update an order's billing or shipping address and, by default, recalculate its taxes. |
+| `POST` | `/api/v2/promotion/applysuggestedpromotion` | Apply a suggested promotion to a shopping cart or order, using the products the shopper chose for it. |
+
+### Cart
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/v2/onlineorderdetail/byonlineorderid/{onlineorderid}` | List the items in a shopping cart, optionally including items added by promotions. |
+| `POST` | `/api/v2/onlineorderdetail` | Add a product to a shopping cart. |
+| `PUT` | `/api/v2/onlineorderdetail` | Change the quantity of a shopping cart item, optionally with price, tax and volume overrides. |
+| `POST` | `/api/v2/onlineorder` | Create a shopping cart for a rep or customer, optionally adding products to it. |
+| `POST` | `/api/v2/onlineorder/foronlinesignup` | Create a shopping cart for an in-progress enrollment, optionally adding products to it. |
+| `POST` | `/api/v2/onlineorder/clear/{onlineorderid}` | Remove all items from a shopping cart. |
+| `POST` | `/api/v2/onlineorder/latest` | Get the shopper's most recent incomplete shopping cart, or create one if none exists. |
+| `POST` | `/api/v2/onlineorder/additemstolatest` | Add products to the shopper's most recent incomplete shopping cart, creating one if needed. |
+| `GET` | `/api/v2/onlineorder/totals/{onlineorderid}` | Get a shopping cart's total, shipping total and handling fee after gift certificates and credits are applied. |
+| `PUT` | `/api/v2/onlineorder/{onlineorderid}/shipmethod` | Change a shopping cart's shipping method and return the recalculated totals. |
+| `POST` | `/api/v2/onlineorder/{onlineorderid}/shipmethodwithoverrides` | Change a shopping cart's shipping method with optional shipping, handling and tax overrides, and return the recalculated totals. |
 
 ### Payments
 
@@ -269,6 +291,18 @@ All routes below are relative to your API URL. `GET` routes need the `api/Read` 
 | `POST` | `/api/v2/order/payment/create` | Create a payment record with default values. `OrderID` and `Amount` are required. |
 | `GET` | `/api/v2/order/payment/{orderid}` | Get all payments for an order, or one payment by `paymentID`. |
 | `GET` | `/api/v2/order/paymentcredit/creditaccounts/{repdid}` | Get credit accounts for a rep, optionally scoped to a customer or a specific credit account. |
+| `GET` | `/api/v2/payments/checkoutpaymentoption/{onlineorderid}` | List the payment methods that can pay for a checkout order. |
+| `GET` | `/api/v2/payments/checkoutpaymentoption/credits/{onlineorderid}` | List the account credits the shopper can apply to a checkout order. |
+| `GET` | `/api/v2/payments/checkoutpaymentoption/giftcertificates/{onlineorderid}` | List the gift certificates the shopper can apply to a checkout order, flagging any that can't be used with the items in the cart. |
+| `GET` | `/api/v2/payments/checkoutpaymentoption/validategiftcertificate/{giftcertificatedid}` | Check a gift certificate code and return its amount, the amount used and its remaining balance. |
+| `POST` | `/api/v2/payments/checkoutpaymentoption/applygcsandcredits/{onlineorderid}` | Apply gift certificates or account credits to a checkout order and return the amount applied for each. |
+
+### Shipping
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/api/v2/shipping/orderdetailtrackingquantity` | Record tracking numbers and shipped quantities against order line items, optionally sending shipping-notification emails. |
+| `POST` | `/api/v2/shipping/trackingimportar/{warehouseid}` | Import tracking numbers for a batch of orders shipped from a warehouse, optionally sending shipping-notification emails. |
 
 ### Customers and reps
 
@@ -306,6 +340,9 @@ All routes below are relative to your API URL. `GET` routes need the `api/Read` 
 | Method | Path | Description |
 | --- | --- | --- |
 | `GET` | `/api/v2/authentication/seamless/forrep/{repdid}` | Get a seamless sign-in token for a rep, for signing in to other Freedom Suite applications. |
+| `GET` | `/api/v2/authentication/seamless/forcustomer/{customerdid}` | Get a seamless sign-in token for a customer, for signing in to other Freedom Suite applications. |
+| `GET` | `/api/v2/authentication/seamless/verify/forrep/{guid}` | Exchange a one-time seamless sign-in token for the rep's identity and an access token. Each token works once. |
+| `GET` | `/api/v2/authentication/seamless/verify/forcustomer/{guid}` | Exchange a one-time seamless sign-in token for the customer's identity and an access token. Each token works once. |
 
 ## Security checklist
 

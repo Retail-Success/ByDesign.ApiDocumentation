@@ -1,0 +1,36 @@
+meta {
+  name: Get Inventory Collection
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/collection/:inventorycollectionid
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~repDID: 
+  ~customerDID: 
+  ~langKey: 
+  ~country: 
+  ~includeChildItems: 
+  ~orderType: 
+}
+
+params:path {
+  inventorycollectionid: 
+}
+
+docs {
+  `GET /api/v2/inventory/collection/{inventorycollectionid}`
+
+  List the products in an inventory collection that can be bought on a back-office order, priced for the given rep or customer; some of them may not be purchasable online, and OData query options ($filter, $top, $orderby, $select) are supported.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

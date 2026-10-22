@@ -1,0 +1,48 @@
+meta {
+  name: Create Cart for Online Signup
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v2/onlineorder/foronlinesignup
+  body: json
+  auth: inherit
+}
+
+params:query {
+  onlineSignupGuid: 
+  ~country: 
+  ~cartConfigurationID: 
+}
+
+body:json {
+  [
+    {
+      "ProductID": "",
+      "SourceProgrammingKey": "",
+      "Quantity": 0,
+      "Price": 0,
+      "IsAutoShip": false,
+      "Misc": [
+        {
+          "Name": "",
+          "Value": ""
+        }
+      ],
+      "OnlineOrderDetailId": ""
+    }
+  ]
+}
+
+docs {
+  `POST /api/v2/onlineorder/foronlinesignup`
+
+  Create a shopping cart for an in-progress enrollment, optionally adding products to it.
+
+  Required scope: `api/Write`
+
+  Fill in the required query parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

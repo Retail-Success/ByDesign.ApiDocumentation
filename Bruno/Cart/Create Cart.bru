@@ -1,0 +1,49 @@
+meta {
+  name: Create Cart
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v2/onlineorder
+  body: json
+  auth: inherit
+}
+
+params:query {
+  ~repDID: 
+  ~customerDID: 
+  ~country: 
+  ~shouldCalculateTax: 
+  ~partyGuid: 
+  ~cartConfigurationID: 
+}
+
+body:json {
+  [
+    {
+      "ProductID": "",
+      "SourceProgrammingKey": "",
+      "Quantity": 0,
+      "Price": 0,
+      "IsAutoShip": false,
+      "Misc": [
+        {
+          "Name": "",
+          "Value": ""
+        }
+      ],
+      "OnlineOrderDetailId": ""
+    }
+  ]
+}
+
+docs {
+  `POST /api/v2/onlineorder`
+
+  Create a new shopping cart for a rep or customer, optionally adding products to it.
+
+  Required scope: `api/Write`
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}
