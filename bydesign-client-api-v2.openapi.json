@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "ByDesign Client API (v2)",
-    "version": "2026-10-12",
+    "version": "2026-10-22",
     "description": "REST API for ByDesign partners and integrations.\n\n## Authentication\nEvery request needs two headers:\n1. `Authorization: Bearer <token>` — an OAuth 2.0 client-credentials token from `https://{client-domain}/oauth2/token`. The token endpoint is served on the same host as the API. `GET` routes need scope `api/Read`; write verbs need `api/Write`. Request only the scopes you need. Tokens expire after one hour — cache and reuse them.\n2. `x-api-key: <api key>` — your API key.\n\nGenerate your client id, client secret and API key, and look up your API URL, in the ByDesign back office. All hostnames in this document are placeholders; replace `{client-domain}` with the host from your API URL."
   },
   "servers": [
