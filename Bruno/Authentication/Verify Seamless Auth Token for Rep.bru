@@ -1,0 +1,25 @@
+meta {
+  name: Verify Seamless Auth Token for Rep
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v2/authentication/seamless/verify/forrep/:guid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  guid: 
+}
+
+docs {
+  `GET /api/v2/authentication/seamless/verify/forrep/{guid}`
+
+  Exchange a one-time seamless-login token (the guid) for the rep's identity and an access token; each guid can be used once.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

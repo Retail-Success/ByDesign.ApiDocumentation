@@ -1,0 +1,25 @@
+meta {
+  name: Get Inventory Reviews
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/v2/inventory/review/:productid
+  body: none
+  auth: inherit
+}
+
+params:path {
+  productid: 
+}
+
+docs {
+  `GET /api/v2/inventory/review/{productid}`
+
+  List the approved reviews for a product.
+
+  Required scope: `api/Read`
+
+  Fill in the path parameters on the **Params** tab before sending.
+}

@@ -1,0 +1,50 @@
+meta {
+  name: Update Cart Item
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/v2/onlineorderdetail
+  body: json
+  auth: inherit
+}
+
+params:query {
+  onlineOrderDetailId: 
+  ~quantity: 
+  ~shouldCalculateTax: 
+}
+
+body:json {
+  {
+    "Quantity": 0,
+    "ProductID": "",
+    "OverriddenFields": {
+      "Price": 0,
+      "SavedPrice": 0,
+      "Volume": 0,
+      "Volume2": 0,
+      "Volume3": 0,
+      "Volume4": 0,
+      "OtherPrice": 0,
+      "OtherPrice2": 0,
+      "OtherPrice3": 0,
+      "OtherPrice4": 0,
+      "TaxableAmount": 0,
+      "Tax": 0
+    }
+  }
+}
+
+docs {
+  `PUT /api/v2/onlineorderdetail`
+
+  Change the quantity of an online order line: send quantity in the query string with no body for a plain update, or leave quantity out and send the optional overrides body to set the quantity together with overridden price, tax, volume and other-price values.
+
+  Required scope: `api/Write`
+
+  Fill in the required query parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}

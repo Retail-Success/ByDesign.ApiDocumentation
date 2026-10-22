@@ -1,0 +1,29 @@
+meta {
+  name: Update Cart Ship Method
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/api/v2/onlineorder/:onlineorderid/shipmethod
+  body: none
+  auth: inherit
+}
+
+params:query {
+  shipMethodID: 
+}
+
+params:path {
+  onlineorderid: 
+}
+
+docs {
+  `PUT /api/v2/onlineorder/{onlineorderid}/shipmethod`
+
+  Change a shopping cart's shipping method and return the recalculated shipping, tax, and totals.
+
+  Required scope: `api/Write`
+
+  Fill in the path and required query parameters on the **Params** tab before sending.
+}

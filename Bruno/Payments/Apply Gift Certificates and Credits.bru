@@ -1,0 +1,34 @@
+meta {
+  name: Apply Gift Certificates and Credits
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v2/payments/checkoutpaymentoption/applygcsandcredits/:onlineorderid
+  body: none
+  auth: inherit
+}
+
+params:query {
+  localeID: 
+  ~gcsToApply: 
+  ~creditsToApply: 
+  ~ccSourceTypeID: 
+}
+
+params:path {
+  onlineorderid: 
+}
+
+docs {
+  `POST /api/v2/payments/checkoutpaymentoption/applygcsandcredits/{onlineorderid}`
+
+  Apply gift certificates or account credits to a checkout order and return the amount actually applied for each one.
+
+  Required scope: `api/Write`
+
+  Fill in the path and required query parameters on the **Params** tab before sending.
+
+  Optional query parameters are disabled; enable the ones you need on the **Params** tab.
+}
